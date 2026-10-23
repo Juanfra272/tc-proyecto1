@@ -1,0 +1,20 @@
+{
+  "nombre": "AgroReglas",
+  "version": "1.0",
+  "inicial": "Programa",
+  "fin": "$",
+  "terminales": ["WHEN", "THEN", "OR", "AND", "NOT", "PARENT_IZQ", "PARENT_DER", "ID", "OP_REL", "NUM", "TRUE", "FALSE", "PUNTO_COMA"],
+  "producciones": {
+    "Programa": [["Regla", "Resto"]],
+    "Resto": [["Regla", "Resto"], []],
+    "Regla": [["WHEN", "Expr", "THEN", "Accion", "PUNTO_COMA"]],
+    "Expr": [["Termino", "ColaOR"]],
+    "ColaOR": [["OR", "Termino", "ColaOR"], []],
+    "Termino": [["Unaria", "ColaAND"]],
+    "ColaAND": [["AND", "Unaria", "ColaAND"], []],
+    "Unaria": [["NOT", "Unaria"], ["PARENT_IZQ", "Expr", "PARENT_DER"], ["Comparacion"]],
+    "Comparacion": [["ID", "OP_REL", "Valor"]],
+    "Valor": [["NUM"], ["TRUE"], ["FALSE"]],
+    "Accion": [["ID", "ID"]]
+  }
+}

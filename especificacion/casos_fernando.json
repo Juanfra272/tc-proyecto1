@@ -1,0 +1,628 @@
+{
+  "especificacion": "AgroReglas 1.0",
+  "estado": "Resultados esperados; pendiente ejecución con el parser",
+  "ubicaciones": "Desplazamiento desde 0, línea y columna desde 1, caracteres Unicode; EOF inmediatamente después del último carácter.",
+  "casos": [
+    {
+      "id": "V01",
+      "entrada": "WHEN humedad < 30 THEN abrir valvula;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Regla mínima numérica",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "ID",
+          "humedad"
+        ],
+        [
+          "OP_REL",
+          "<"
+        ],
+        [
+          "NUM",
+          "30"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "abrir"
+        ],
+        [
+          "ID",
+          "valvula"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ]
+    },
+    {
+      "id": "V02",
+      "entrada": "WHEN lluvia == FALSE THEN activar riego;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Valor booleano",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "ID",
+          "lluvia"
+        ],
+        [
+          "OP_REL",
+          "=="
+        ],
+        [
+          "FALSE",
+          "FALSE"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "activar"
+        ],
+        [
+          "ID",
+          "riego"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ]
+    },
+    {
+      "id": "V03",
+      "entrada": "WHEN temperatura >= 28 AND humedad <= 40 OR emergencia == TRUE THEN activar alarma;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Precedencia AND sobre OR",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "ID",
+          "temperatura"
+        ],
+        [
+          "OP_REL",
+          ">="
+        ],
+        [
+          "NUM",
+          "28"
+        ],
+        [
+          "AND",
+          "AND"
+        ],
+        [
+          "ID",
+          "humedad"
+        ],
+        [
+          "OP_REL",
+          "<="
+        ],
+        [
+          "NUM",
+          "40"
+        ],
+        [
+          "OR",
+          "OR"
+        ],
+        [
+          "ID",
+          "emergencia"
+        ],
+        [
+          "OP_REL",
+          "=="
+        ],
+        [
+          "TRUE",
+          "TRUE"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "activar"
+        ],
+        [
+          "ID",
+          "alarma"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ]
+    },
+    {
+      "id": "V04",
+      "entrada": "WHEN NOT (lluvia == TRUE OR humedad > 60) AND nivel != 0 THEN encender bomba;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Negación y agrupación",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "NOT",
+          "NOT"
+        ],
+        [
+          "PARENT_IZQ",
+          "("
+        ],
+        [
+          "ID",
+          "lluvia"
+        ],
+        [
+          "OP_REL",
+          "=="
+        ],
+        [
+          "TRUE",
+          "TRUE"
+        ],
+        [
+          "OR",
+          "OR"
+        ],
+        [
+          "ID",
+          "humedad"
+        ],
+        [
+          "OP_REL",
+          ">"
+        ],
+        [
+          "NUM",
+          "60"
+        ],
+        [
+          "PARENT_DER",
+          ")"
+        ],
+        [
+          "AND",
+          "AND"
+        ],
+        [
+          "ID",
+          "nivel"
+        ],
+        [
+          "OP_REL",
+          "!="
+        ],
+        [
+          "NUM",
+          "0"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "encender"
+        ],
+        [
+          "ID",
+          "bomba"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ]
+    },
+    {
+      "id": "V05",
+      "entrada": "WHEN NOT NOT (humedad < 30 AND (lluvia == FALSE OR reserva > 0)) THEN abrir valvula; WHEN nivel == 0 THEN apagar bomba;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Negación repetida, anidamiento y varias reglas",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "NOT",
+          "NOT"
+        ],
+        [
+          "NOT",
+          "NOT"
+        ],
+        [
+          "PARENT_IZQ",
+          "("
+        ],
+        [
+          "ID",
+          "humedad"
+        ],
+        [
+          "OP_REL",
+          "<"
+        ],
+        [
+          "NUM",
+          "30"
+        ],
+        [
+          "AND",
+          "AND"
+        ],
+        [
+          "PARENT_IZQ",
+          "("
+        ],
+        [
+          "ID",
+          "lluvia"
+        ],
+        [
+          "OP_REL",
+          "=="
+        ],
+        [
+          "FALSE",
+          "FALSE"
+        ],
+        [
+          "OR",
+          "OR"
+        ],
+        [
+          "ID",
+          "reserva"
+        ],
+        [
+          "OP_REL",
+          ">"
+        ],
+        [
+          "NUM",
+          "0"
+        ],
+        [
+          "PARENT_DER",
+          ")"
+        ],
+        [
+          "PARENT_DER",
+          ")"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "abrir"
+        ],
+        [
+          "ID",
+          "valvula"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ],
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "ID",
+          "nivel"
+        ],
+        [
+          "OP_REL",
+          "=="
+        ],
+        [
+          "NUM",
+          "0"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "apagar"
+        ],
+        [
+          "ID",
+          "bomba"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ]
+    },
+    {
+      "id": "I01",
+      "entrada": "WHEN humedad < THEN abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "ID",
+          "humedad"
+        ],
+        [
+          "OP_REL",
+          "<"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "abrir"
+        ],
+        [
+          "ID",
+          "valvula"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ],
+      "error_esperado": {
+        "desplazamiento": 15,
+        "linea": 1,
+        "columna": 16,
+        "token_encontrado": "THEN",
+        "lexema_encontrado": "THEN",
+        "simbolo_pendiente": "Valor",
+        "tokens_esperados": [
+          "NUM",
+          "TRUE",
+          "FALSE"
+        ],
+        "mensaje_orientativo": "Se esperaba un número o booleano después de <."
+      }
+    },
+    {
+      "id": "I02",
+      "entrada": "WHEN humedad < 30 AND THEN abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "ID",
+          "humedad"
+        ],
+        [
+          "OP_REL",
+          "<"
+        ],
+        [
+          "NUM",
+          "30"
+        ],
+        [
+          "AND",
+          "AND"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "abrir"
+        ],
+        [
+          "ID",
+          "valvula"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ],
+      "error_esperado": {
+        "desplazamiento": 22,
+        "linea": 1,
+        "columna": 23,
+        "token_encontrado": "THEN",
+        "lexema_encontrado": "THEN",
+        "simbolo_pendiente": "Unaria",
+        "tokens_esperados": [
+          "ID",
+          "NOT",
+          "PARENT_IZQ"
+        ],
+        "mensaje_orientativo": "Se esperaba una condición después de AND."
+      }
+    },
+    {
+      "id": "I03",
+      "entrada": "WHEN () THEN abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "PARENT_IZQ",
+          "("
+        ],
+        [
+          "PARENT_DER",
+          ")"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "abrir"
+        ],
+        [
+          "ID",
+          "valvula"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ],
+      "error_esperado": {
+        "desplazamiento": 6,
+        "linea": 1,
+        "columna": 7,
+        "token_encontrado": "PARENT_DER",
+        "lexema_encontrado": ")",
+        "simbolo_pendiente": "Expr",
+        "tokens_esperados": [
+          "ID",
+          "NOT",
+          "PARENT_IZQ"
+        ],
+        "mensaje_orientativo": "Se esperaba una condición dentro del grupo."
+      }
+    },
+    {
+      "id": "I04",
+      "entrada": "WHEN (humedad < 30 THEN abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "PARENT_IZQ",
+          "("
+        ],
+        [
+          "ID",
+          "humedad"
+        ],
+        [
+          "OP_REL",
+          "<"
+        ],
+        [
+          "NUM",
+          "30"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "abrir"
+        ],
+        [
+          "ID",
+          "valvula"
+        ],
+        [
+          "PUNTO_COMA",
+          ";"
+        ]
+      ],
+      "error_esperado": {
+        "desplazamiento": 19,
+        "linea": 1,
+        "columna": 20,
+        "token_encontrado": "THEN",
+        "lexema_encontrado": "THEN",
+        "simbolo_pendiente": "PARENT_DER",
+        "tokens_esperados": [
+          "PARENT_DER"
+        ],
+        "mensaje_orientativo": "Se esperaba ) para cerrar el grupo."
+      }
+    },
+    {
+      "id": "I05",
+      "entrada": "WHEN humedad < 30 THEN abrir valvula",
+      "resultado_esperado": "rechazar",
+      "tokens_esperados": [
+        [
+          "WHEN",
+          "WHEN"
+        ],
+        [
+          "ID",
+          "humedad"
+        ],
+        [
+          "OP_REL",
+          "<"
+        ],
+        [
+          "NUM",
+          "30"
+        ],
+        [
+          "THEN",
+          "THEN"
+        ],
+        [
+          "ID",
+          "abrir"
+        ],
+        [
+          "ID",
+          "valvula"
+        ]
+      ],
+      "error_esperado": {
+        "desplazamiento": 36,
+        "linea": 1,
+        "columna": 37,
+        "token_encontrado": "$",
+        "lexema_encontrado": "",
+        "simbolo_pendiente": "PUNTO_COMA",
+        "tokens_esperados": [
+          "PUNTO_COMA"
+        ],
+        "mensaje_orientativo": "Se esperaba ; al final de la regla."
+      }
+    }
+  ]
+}

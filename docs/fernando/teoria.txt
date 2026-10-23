@@ -1,0 +1,201 @@
+AgroReglas: definición y análisis formal
+
+Autoría: Fernando.
+
+1. Introducción y dominio
+
+AgroReglas es un lenguaje de dominio específico para expresar reglas de monitoreo agrícola. Cada regla relaciona mediciones o estados de sensores con una acción sobre un dispositivo. Por ejemplo, una humedad baja puede indicar la apertura de una válvula. El proyecto estudia la estructura de esas reglas mediante una gramática libre de contexto y un análisis predictivo LL(1).
+
+Una regla tiene la forma WHEN condición THEN verbo destino;. Un programa contiene una o más reglas. El reconocimiento sintáctico comprueba que la entrada cumple esa forma; no ejecuta dispositivos ni verifica que los sensores o acciones existan. Tampoco comprueba tipos, por lo que una comparación como temperatura > TRUE es sintácticamente válida aunque una futura etapa semántica pudiera rechazarla.
+
+2. Especificación del lenguaje
+
+2.1 Alfabeto y contrato léxico
+
+La definición toma como referencia la función analizador_lexico de anlizador_lexico1.ipynb, sin modificarla. Los tokens son pares (tipo, lexema). La gramática consume el tipo; conserva el lexema para identificar nombres, valores y el operador relacional concreto.
+
+El alfabeto relevante incluye letras ASCII, guion bajo, dígitos decimales, los signos > < = ! ; ( ) y los espacios permitidos. Los signos = y ! solo forman tokens cuando participan en los operadores listados. Exactamente como en el notebook, NUM usa \d+ de Python y admite dígitos decimales Unicode; ID limita sus letras y dígitos a ASCII. El alfabeto no implica que cualquier combinación de sus caracteres sea válida.
+
+| Categoría | Tipo de token | Lexemas o patrón del notebook |
+| --- | --- | --- |
+| Palabras reservadas | WHEN THEN AND OR NOT TRUE FALSE | Los siete nombres, sin distinguir mayúsculas de minúsculas |
+| Identificador | ID | [A-Za-z_][A-Za-z0-9_]*, excepto reservadas |
+| Número | NUM | \d+, entero no negativo sin signo ni punto decimal |
+| Relacional | OP_REL | >=, <=, ==, !=, >, < |
+| Fin de regla | PUNTO_COMA | ; |
+| Agrupación | PARENT_IZQ, PARENT_DER | (, ) |
+| Espacio descartado | No llega al parser | Espacio, tabulador y salto de línea LF, patrón [ \t\n]+ |
+
+Las palabras reservadas se reconocen después de consumir el identificador completo. when produce el tipo WHEN, pero WHEN_sensor sigue siendo ID. El lexer conserva la escritura original del lexema. Los nombres se conservan tal como se escriben; no se define equivalencia semántica entre sensor y Sensor.
+
+Se reconocen primero los operadores relacionales de dos caracteres. Un carácter ajeno a las categorías produce ValueError. No hay comentarios, cadenas, números negativos, decimales ni separadores de acciones. El carácter CR \r no se descarta en el lexer actual. La lectura y eventual normalización de archivos deben documentarse en la etapa de integración; esta especificación no cambia el notebook.
+
+El marcador $ representa fin de entrada y debe añadirlo el parser después de los tokens. No es un carácter aceptado por el lexer. ε representa la cadena vacía y tampoco es un token.
+
+2.2 Reglas de formación y significado previsto
+
+Una comparación contiene un identificador a la izquierda, un operador relacional y un número o booleano a la derecha. No se admiten comparaciones encadenadas, identificadores como valor derecho ni booleanos aislados. Las condiciones combinan comparaciones mediante AND y OR. La extensión incorpora negación NOT y agrupación con paréntesis, con anidamiento de profundidad finita arbitraria.
+
+La precedencia, de mayor a menor, es agrupación, comparación, NOT, AND, OR. Así, NOT humedad < 30 niega la comparación completa. Para cadenas del mismo operador binario se acuerda asociación a la izquierda en la representación semántica. La gramática usa colas derechas para permitir reconocimiento LL(1). La asociación acordada se obtiene acumulando los operandos en orden. NOT NOT c se interpreta como NOT (NOT c).
+
+La acción consta exactamente de dos identificadores: verbo y destino. abrir valvula y activar alarma son acciones; esos nombres son vocabulario del dominio, no nuevas palabras reservadas. Cada regla termina en punto y coma. El salto de línea solo separa tokens y no termina una regla.
+
+2.3 Cinco ejemplos válidos
+
+Son ejemplos de la especificación, no pruebas ejecutadas del futuro parser ni comprobaciones de AST. Los mismos textos se entregan en especificacion/casos_fernando.json.
+
+| ID | Entrada | Propiedad ilustrada |
+| --- | --- | --- |
+| V01 | WHEN humedad < 30 THEN abrir valvula; | Regla mínima con valor numérico |
+| V02 | WHEN lluvia == FALSE THEN activar riego; | Valor booleano |
+| V03 | WHEN temperatura >= 28 AND humedad <= 40 OR emergencia == TRUE THEN activar alarma; | AND tiene prioridad sobre OR |
+| V04 | WHEN NOT (lluvia == TRUE OR humedad > 60) AND nivel != 0 THEN encender bomba; | Extensión con negación y agrupación |
+| V05 | WHEN NOT NOT (humedad < 30 AND (lluvia == FALSE OR reserva > 0)) THEN abrir valvula; WHEN nivel == 0 THEN apagar bomba; | Negación repetida, anidamiento y varias reglas |
+
+Se cumplen los mínimos del enunciado: siete palabras reservadas, identificadores, números y booleanos, seis operadores relacionales, dos conectores lógicos, una estructura principal, varias reglas y construcción compuesta.
+
+3. Gramática libre de contexto
+
+Formalmente, G = (N, T, P, S), con S = Programa.
+
+N = {Programa, Resto, Regla, Expr, ColaOR, Termino, ColaAND, Unaria, Comparacion, Valor, Accion}.
+
+T = {WHEN, THEN, OR, AND, NOT, PARENT_IZQ, PARENT_DER, ID, OP_REL, NUM, TRUE, FALSE, PUNTO_COMA}.
+
+P contiene las siguientes 18 producciones. La numeración coincide con la tabla predictiva y con el orden de las alternativas en especificacion/gramatica.json.
+
+ 1. Programa    → Regla Resto
+ 2. Resto       → Regla Resto
+ 3. Resto       → ε
+ 4. Regla       → WHEN Expr THEN Accion PUNTO_COMA
+ 5. Expr        → Termino ColaOR
+ 6. ColaOR      → OR Termino ColaOR
+ 7. ColaOR      → ε
+ 8. Termino     → Unaria ColaAND
+ 9. ColaAND     → AND Unaria ColaAND
+10. ColaAND     → ε
+11. Unaria      → NOT Unaria
+12. Unaria      → PARENT_IZQ Expr PARENT_DER
+13. Unaria      → Comparacion
+14. Comparacion → ID OP_REL Valor
+15. Valor       → NUM
+16. Valor       → TRUE
+17. Valor       → FALSE
+18. Accion      → ID ID
+
+Una entrada vacía no pertenece al lenguaje porque Programa exige la primera Regla. Solo Resto, ColaOR y ColaAND son anulables. Las reglas tienen longitud finita y cada repetición no vacía consume tokens.
+
+Una derivación izquierda de la secuencia de tipos de V01 ilustra la conexión con el lexer:
+
+Programa
+⇒ Regla Resto
+⇒ WHEN Expr THEN Accion PUNTO_COMA Resto
+⇒ WHEN Termino ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN Unaria ColaAND ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN Comparacion ColaAND ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL Valor ColaAND ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM ColaAND ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM THEN ID ID PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM THEN ID ID PUNTO_COMA
+
+4. Análisis y resolución de conflictos
+
+4.1 Recursión izquierda
+
+Una GLC presenta recursión izquierda si existe un no terminal A tal que A ⇒+ A α. Un descenso recursivo directo sobre esa estructura intentaría reconocer A sin consumir entrada y podría no terminar.
+
+Una formulación inicial habitual sería Expr → Expr OR Termino | Termino y Termino → Termino AND Unaria | Unaria. Ambas reglas tienen recursión izquierda inmediata. Sus alternativas también intentarían ocupar las mismas celdas de la tabla: por ejemplo, ambas alternativas de Expr pueden comenzar con ID.
+
+Se aplica la transformación A → A α | β a A → β A', A' → α A' | ε. De ella se obtienen Expr/ColaOR y Termino/ColaAND, preservando las secuencias de operandos y operadores. La asociación del AST se acuerda por separado, como indica la sección 2.2.
+
+En la versión final no existe recursión izquierda inmediata ni indirecta. Desde Programa o Resto se llega a Regla, cuyo primer símbolo es WHEN. Las rutas iniciales Expr → Termino → Unaria → Comparacion terminan en ID; las demás alternativas de Unaria comienzan en NOT o PARENT_IZQ. La vuelta de Unaria a Expr consume antes PARENT_IZQ. Las colas recursivas consumen OR o AND antes de repetirse. El verificador comprueba también ciclos a través de prefijos anulables mediante la relación de esquinas izquierdas y no encuentra ninguno.
+
+4.2 Factorización por la izquierda
+
+La propuesta Programa → Regla Programa | Regla comparte el prefijo Regla. Ambas alternativas tienen FIRST igual a {WHEN}, por lo que entrarían en conflicto en M[Programa, WHEN]. Se factoriza como Programa → Regla Resto y Resto → Regla Resto | ε.
+
+La formulación Comparacion → ID OP_REL NUM | ID OP_REL TRUE | ID OP_REL FALSE también comparte un prefijo. Se factoriza en Comparacion → ID OP_REL Valor y Valor → NUM | TRUE | FALSE.
+
+La gramática final no necesita más factorización. Las alternativas no vacías de cada no terminal con elección tienen conjuntos FIRST disjuntos. En particular, las tres alternativas de Unaria empiezan respectivamente por NOT, PARENT_IZQ e ID.
+
+4.3 Ambigüedad y precedencia
+
+Una gramática es ambigua cuando alguna cadena tiene dos árboles de derivación distintos. Una formulación plana Condicion → Condicion AND Condicion | Condicion OR Condicion | Comparacion permite que a OR b AND c se agrupe como (a OR b) AND c o como a OR (b AND c), donde a, b y c representan comparaciones completas. También contiene recursión izquierda. Factorizar por sí solo no resuelve esa elección de significado.
+
+La gramática final separa niveles. Expr une términos mediante OR; Termino une unarias mediante AND; Unaria resuelve la negación, la agrupación o la comparación. Por ello, a OR b AND c se interpreta como a OR (b AND c), y NOT a AND b como (NOT a) AND b. (a OR b) AND c requiere los paréntesis escritos explícitamente. NOT se aplica a una sola Unaria, de modo que negar toda una disyunción requiere NOT (a OR b).
+
+Los SELECT disjuntos de la gramática final demuestran que es LL(1). Toda GLC LL(1) es no ambigua: una derivación izquierda queda determinada por el no terminal pendiente y el siguiente tipo de token. Esto justifica la ausencia de ambigüedad para todas sus cadenas, sin depender solo de ejemplos.
+
+4.4 Extensión integrada
+
+El núcleo utiliza Unaria → Comparacion. La extensión añade Unaria → NOT Unaria | PARENT_IZQ Expr PARENT_DER, manteniendo esa alternativa original. Sus dos nuevos tokens iniciales son diferentes de ID, por lo que no introducen conflictos FIRST/FIRST.
+
+Con la extensión, FIRST de Unaria, Termino y Expr pasa de {ID} a {ID, NOT, PARENT_IZQ}. El cierre de paréntesis añade PARENT_DER a FOLLOW de Expr y sus colas y operandos internos. La tabla final incorpora las entradas con NOT y PARENT_IZQ, y permite seleccionar las alternativas vacías de las colas ante PARENT_DER. No se permite una condición vacía entre paréntesis. V04 y V05 especifican usos válidos; I03 e I04 especifican errores de la extensión.
+
+5. Cálculo de FIRST y FOLLOW
+
+FIRST(α) contiene los terminales que pueden iniciar alguna cadena derivada de α. Incluye ε cuando α ⇒* ε. Para un terminal t, FIRST(t) = {t}. Al recorrer una secuencia se agregan los FIRST sin ε hasta encontrar un símbolo no anulable; se incluye ε solo si todos son anulables.
+
+FOLLOW(A) contiene los terminales que pueden aparecer inmediatamente después de A en una forma sentencial. Se inicia con $ ∈ FOLLOW(Programa). Para cada producción A → α B β, se agrega FIRST(β) − {ε} a FOLLOW de B. Cuando β es anulable, se agrega también FOLLOW de A. Se repiten estas operaciones hasta alcanzar un punto fijo. FOLLOW nunca contiene ε.
+
+Por ejemplo, FIRST(Unaria) = {NOT, PARENT_IZQ, ID} por sus tres alternativas. FIRST(ColaAND) = {AND, ε}, mientras que FIRST(Resto) = {WHEN, ε}. Como Termino no es anulable, FIRST(Expr) = FIRST(Termino) = FIRST(Unaria).
+
+De Regla → WHEN Expr THEN Accion PUNTO_COMA se obtiene THEN ∈ FOLLOW(Expr) y PUNTO_COMA ∈ FOLLOW(Accion). De la agrupación se obtiene PARENT_DER ∈ FOLLOW(Expr). Por tanto, FOLLOW(Expr) = {THEN, PARENT_DER}. Como ColaOR termina la producción de Expr, hereda ese FOLLOW. Termino puede ir seguido por OR, o por FOLLOW de Expr cuando ColaOR ⇒ ε. Análogamente, Unaria añade AND y hereda FOLLOW de Termino. Comparacion y Valor heredan FOLLOW de Unaria.
+
+Las tablas completas, para los once no terminales, están en first_follow_tabla.txt. Ese archivo forma parte de esta sección teórica y debe incorporarse al informe, junto con la tabla predictiva. Se genera desde la GLC formal del proyecto, para evitar divergencias de transcripción.
+
+6. Construcción de la tabla LL(1)
+
+Para cada producción A → α, se coloca su número en M[A, t] para todo t ∈ FIRST(α) − {ε}. Si ε ∈ FIRST(α), se coloca además en M[A, t] para todo t ∈ FOLLOW(A). Este conjunto de columnas es SELECT de la producción. Una celda sin producción indica error sintáctico. Una celda con dos producciones distintas indica conflicto LL(1).
+
+La tabla completa de first_follow_tabla.txt incluye los trece terminales y $. Tiene 25 celdas ocupadas de 154 y cero conflictos. Por ejemplo, M[Unaria, NOT] = 11, M[Unaria, PARENT_IZQ] = 12, M[Unaria, ID] = 13, M[ColaAND, OR] = 10, M[ColaOR, PARENT_DER] = 7 y M[Resto, $] = 3.
+
+En los tres no terminales anulables, los SELECT son disjuntos:
+
+| No terminal | SELECT de alternativa no vacía | SELECT de ε |
+| --- | --- | --- |
+| Resto | {WHEN} | {$} |
+| ColaOR | {OR} | {THEN, PARENT_DER} |
+| ColaAND | {AND} | {OR, THEN, PARENT_DER} |
+
+Los demás puntos de elección son Unaria, con {NOT}, {PARENT_IZQ} e {ID}, y Valor, con {NUM}, {TRUE} y {FALSE}. No hay conflictos FIRST/FIRST ni FIRST/FOLLOW. El reconocimiento podrá decidir con un token de anticipación, sin retroceso. Debe aceptar únicamente tras consumir todas las reglas y alcanzar $.
+
+7. Cinco casos inválidos y resultados esperados
+
+Los cinco casos son errores sintácticos con tokens reconocibles por el lexer. Las ubicaciones usan línea y columna desde 1; el desplazamiento absoluto de casos_fernando.json cuenta caracteres desde 0. EOF se ubica inmediatamente después del último carácter. Se especifica el primer punto donde ya no puede continuar una derivación válida, sin consumir otro token para intentar reparar la entrada.
+
+| ID | Entrada | Línea:columna | Resultado esperado |
+| --- | --- | --- | --- |
+| I01 | WHEN humedad < THEN abrir valvula; | 1:16 | Rechazar en THEN: falta NUM, TRUE o FALSE después de < |
+| I02 | WHEN humedad < 30 AND THEN abrir valvula; | 1:23 | Rechazar en THEN: después de AND se esperaba ID, NOT o ( |
+| I03 | WHEN () THEN abrir valvula; | 1:7 | Rechazar en ): se esperaba ID, NOT o ( para iniciar la condición |
+| I04 | WHEN (humedad < 30 THEN abrir valvula; | 1:20 | Rechazar en THEN: falta ) para cerrar el grupo |
+| I05 | WHEN humedad < 30 THEN abrir valvula | 1:37 | Rechazar en EOF: falta ; para terminar la regla |
+
+I01 falla en la fila Valor; I02 en Unaria; I03 en Expr. En I04, las colas internas pueden derivar ε ante THEN, pero el siguiente terminal obligatorio es PARENT_DER, por lo que allí se detecta la falta del cierre. I05 falla al cotejar el terminal PUNTO_COMA con $. Los mensajes propuestos expresan el contenido esperado; su redacción final debe preservar causa y ubicación.
+
+El JSON incluye los cinco ejemplos válidos y estos cinco inválidos, sus tipos de tokens, ubicaciones y resultados esperados. El campo resultado_esperado es una especificación; no representa un resultado obtenido del parser.
+
+8. Validación y alcance de la entrega
+
+Ejecutar desde la raíz:
+
+python herramientas/validar_gramatica.py
+
+El verificador independiente usa solo la biblioteca estándar de Python. Calcula FIRST, FOLLOW y SELECT por punto fijo, construye la tabla, detecta colisiones, comprueba recursión izquierda incluyendo prefijos anulables, accesibilidad y productividad. Además compara las tablas publicadas con el resultado calculado. Sus autocontroles usan gramáticas pequeñas con resultados conocidos, incluyendo un conflicto FIRST/FIRST, uno FIRST/FOLLOW y recursión izquierda indirecta.
+
+Para regenerar las tablas después de un cambio deliberado en la gramática:
+
+python herramientas/validar_gramatica.py --escribir
+
+La validación estática obtiene 18 producciones, 25 celdas ocupadas, cero conflictos, cero no terminales con recursión izquierda y ningún no terminal inaccesible o improductivo. No constituye una implementación del parser del proyecto ni ejecuta programas AgroReglas. No se utiliza un generador de parsers.
+
+La validación formal es coherente con el lexer existente. La comprobación empírica de aceptación y rechazo requiere la implementación del parser.
+
+Referencias del proyecto
+
+- Proyecto Analisis_Sintactico.pdf, secciones 5, 6.1 a 6.4, 6.8 y 6.9: mínimos del lenguaje, definición formal, análisis LL(1), pruebas y extensión.
+- Rubrica_Proyecto.pdf, criterios 1 a 4 y 7: coherencia del lenguaje, GLC, FIRST/FOLLOW, tabla y extensión integrada.
+- anlizador_lexico1.ipynb, primera celda: interfaz y categorías del lexer proporcionado.
