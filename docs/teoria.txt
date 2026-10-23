@@ -42,7 +42,7 @@ La acción consta exactamente de dos identificadores: verbo y destino. abrir val
 
 2.3 Cinco ejemplos válidos
 
-Son ejemplos de la especificación, no pruebas ejecutadas del futuro parser ni comprobaciones de AST. Los mismos textos se entregan en especificacion/casos_fernando.json.
+Son ejemplos de la especificación, no pruebas ejecutadas del futuro parser ni comprobaciones de AST. Los mismos textos se entregan en especificacion/casos.json.
 
 | ID | Entrada | Propiedad ilustrada |
 | --- | --- | --- |
@@ -164,7 +164,7 @@ Los demás puntos de elección son Unaria, con {NOT}, {PARENT_IZQ} e {ID}, y Val
 
 7. Cinco casos inválidos y resultados esperados
 
-Los cinco casos son errores sintácticos con tokens reconocibles por el lexer. Las ubicaciones usan línea y columna desde 1; el desplazamiento absoluto de casos_fernando.json cuenta caracteres desde 0. EOF se ubica inmediatamente después del último carácter. Se especifica el primer punto donde ya no puede continuar una derivación válida, sin consumir otro token para intentar reparar la entrada.
+Los cinco casos son errores sintácticos con tokens reconocibles por el lexer. Las ubicaciones usan línea y columna desde 1; el desplazamiento absoluto de casos.json cuenta caracteres desde 0. EOF se ubica inmediatamente después del último carácter. Se especifica el primer punto donde ya no puede continuar una derivación válida, sin consumir otro token para intentar reparar la entrada.
 
 | ID | Entrada | Línea:columna | Resultado esperado |
 | --- | --- | --- | --- |

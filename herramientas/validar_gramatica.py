@@ -163,7 +163,7 @@ def main():
     resultado = analizar(g)
     assert not any(resultado[i] for i in (4, 5, 6, 7)), "La gramática no supera la validación"
     contenido = informe(g, resultado)
-    destino = RAIZ / "docs/fernando/first_follow_tabla.txt"
+    destino = RAIZ / "docs/first_follow_tabla.txt"
     if args.escribir:
         destino.write_text(contenido, encoding="utf-8")
     else:
