@@ -1,0 +1,83 @@
+$ python -m herramientas.demo_parser
+V01: WHEN humedad < 30 THEN abrir valvula;
+ACEPTADO. Reglas en AST: 1
+
+V02: WHEN lluvia == FALSE THEN activar riego;
+ACEPTADO. Reglas en AST: 1
+
+V03: WHEN temperatura >= 28 AND humedad <= 40 OR emergencia == TRUE THEN activar alarma;
+ACEPTADO. Reglas en AST: 1
+
+V04: WHEN NOT (lluvia == TRUE OR humedad > 60) AND nivel != 0 THEN encender bomba;
+ACEPTADO. Reglas en AST: 1
+
+V05: WHEN NOT NOT (humedad < 30 AND (lluvia == FALSE OR reserva > 0)) THEN abrir valvula; WHEN nivel == 0 THEN apagar bomba;
+ACEPTADO. Reglas en AST: 2
+
+I01: WHEN humedad < THEN abrir valvula;
+RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba FALSE, un número, TRUE; se encontró 'THEN'. Símbolo pendiente: Valor.
+
+I02: WHEN humedad < 30 AND THEN abrir valvula;
+RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, NOT, '('; se encontró 'THEN'. Símbolo pendiente: Unaria.
+
+I03: WHEN () THEN abrir valvula;
+RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, NOT, '('; se encontró ')'. Símbolo pendiente: Expr.
+
+I04: WHEN (humedad < 30 THEN abrir valvula;
+RECHAZADO. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba ')' para cerrar el grupo; se encontró 'THEN'. Símbolo pendiente: PARENT_DER.
+
+I05: WHEN humedad < 30 THEN abrir valvula
+RECHAZADO. Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba ';' al final de la regla; se encontró fin de entrada. Símbolo pendiente: PUNTO_COMA.
+
+AST del caso V04:
+{
+  "tipo": "Programa",
+  "reglas": [
+    {
+      "tipo": "Regla",
+      "condicion": {
+        "tipo": "Logica",
+        "operador": "AND",
+        "izquierda": {
+          "tipo": "Negacion",
+          "operando": {
+            "tipo": "Logica",
+            "operador": "OR",
+            "izquierda": {
+              "tipo": "Comparacion",
+              "identificador": "lluvia",
+              "operador": "==",
+              "valor": {
+                "tipo": "Booleano",
+                "valor": true
+              }
+            },
+            "derecha": {
+              "tipo": "Comparacion",
+              "identificador": "humedad",
+              "operador": ">",
+              "valor": {
+                "tipo": "Numero",
+                "valor": 60
+              }
+            }
+          }
+        },
+        "derecha": {
+          "tipo": "Comparacion",
+          "identificador": "nivel",
+          "operador": "!=",
+          "valor": {
+            "tipo": "Numero",
+            "valor": 0
+          }
+        }
+      },
+      "accion": {
+        "tipo": "Accion",
+        "verbo": "encender",
+        "destino": "bomba"
+      }
+    }
+  ]
+}

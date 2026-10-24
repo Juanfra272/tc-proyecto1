@@ -1,0 +1,14 @@
+WHEN NOT (lluvia == TRUE OR humedad > 60) AND nivel != 0 THEN encender bomba;
+
+Programa
+  Regla
+    AND
+      NOT
+        OR
+          Comparacion lluvia ==
+            Booleano True
+          Comparacion humedad >
+            Numero 60
+      Comparacion nivel !=
+        Numero 0
+    Accion encender bomba

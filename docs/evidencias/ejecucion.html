@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><title>AgroReglas: aceptación y errores</title>
+<style>
+body { margin: 0; font-family: system-ui, sans-serif; color: #182c26; }
+h1 { font-size: 22px; margin: 0 0 12px; }
+main { padding: 24px; background: #f4f7f5; }
+pre { padding: 18px; background: #152a23; color: #ebf3ef; border-radius: 8px;
+font: 13px/1.55 monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+p { font-size: 13px; }
+</style><main><h1>AgroReglas: aceptación y errores</h1>
+<p>Salida real de Python. Página preparada para capturar e incorporar al informe.</p>
+<pre>$ python -m herramientas.demo_parser
+V01: WHEN humedad &lt; 30 THEN abrir valvula;
+ACEPTADO. Reglas en AST: 1
+
+V02: WHEN lluvia == FALSE THEN activar riego;
+ACEPTADO. Reglas en AST: 1
+
+V03: WHEN temperatura &gt;= 28 AND humedad &lt;= 40 OR emergencia == TRUE THEN activar alarma;
+ACEPTADO. Reglas en AST: 1
+
+V04: WHEN NOT (lluvia == TRUE OR humedad &gt; 60) AND nivel != 0 THEN encender bomba;
+ACEPTADO. Reglas en AST: 1
+
+V05: WHEN NOT NOT (humedad &lt; 30 AND (lluvia == FALSE OR reserva &gt; 0)) THEN abrir valvula; WHEN nivel == 0 THEN apagar bomba;
+ACEPTADO. Reglas en AST: 2
+
+I01: WHEN humedad &lt; THEN abrir valvula;
+RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba FALSE, un número, TRUE; se encontró &#x27;THEN&#x27;. Símbolo pendiente: Valor.
+
+I02: WHEN humedad &lt; 30 AND THEN abrir valvula;
+RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, NOT, &#x27;(&#x27;; se encontró &#x27;THEN&#x27;. Símbolo pendiente: Unaria.
+
+I03: WHEN () THEN abrir valvula;
+RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, NOT, &#x27;(&#x27;; se encontró &#x27;)&#x27;. Símbolo pendiente: Expr.
+
+I04: WHEN (humedad &lt; 30 THEN abrir valvula;
+RECHAZADO. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba &#x27;)&#x27; para cerrar el grupo; se encontró &#x27;THEN&#x27;. Símbolo pendiente: PARENT_DER.
+
+I05: WHEN humedad &lt; 30 THEN abrir valvula
+RECHAZADO. Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba &#x27;;&#x27; al final de la regla; se encontró fin de entrada. Símbolo pendiente: PUNTO_COMA.
+
+</pre></main></html>

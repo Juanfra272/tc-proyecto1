@@ -1,0 +1,97 @@
+AgroReglas: diseño e implementación del parser
+
+Autoría: Juanfra.
+
+1. Interfaz e integración
+
+El paquete agroreglas implementa un parser predictivo propio en Python, sin generadores de parsers ni dependencias externas. La función pública es:
+
+    from agroreglas import analizar_tokens, ErrorSintactico
+    ast = analizar_tokens(tokens, fuente)
+
+Los tokens son los pares (tipo, lexema) que entrega analizador_lexico en anlizador_lexico1.ipynb. fuente debe ser el mismo texto exacto que recibió el lexer. El parser añade el marcador $; el llamador no debe incluirlo. El resultado es un diccionario que representa el programa completo. Si la entrada es sintácticamente inválida, se lanza ErrorSintactico. Si los lexemas no corresponden al texto proporcionado, se lanza ValueError por incumplimiento del contrato de integración.
+
+Para ejecutar la demostración desde la raíz del repositorio:
+
+    python -m herramientas.demo_parser
+
+La demostración carga únicamente la celda de definición del lexer del notebook local, sin ejecutar su celda de ejemplo. Es un puente temporal para comprobar el parser con el lexer original. Cuando Vicente lo extraiga a un módulo, podrá reemplazar cargar_lexer_notebook por su import. La ejecución general desde archivo o texto y el README corresponden a esa etapa de integración.
+
+2. Relación con la gramática y la tabla LL(1)
+
+parser.py lee especificacion/gramatica.json y utiliza el cálculo estático analizar de herramientas/validar_gramatica.py para obtener la tabla documentada por Fernando. Esta función calcula FIRST, FOLLOW y SELECT; no reconoce el programa ni genera el código del parser. El reconocimiento y las acciones semánticas están escritos en agroreglas/parser.py. La carga rechaza una gramática con conflictos LL(1) o recursión izquierda.
+
+La pila comienza con $ y Programa, con Programa en la cima. En cada paso se consulta el tipo del token actual:
+
+- Si la cima es un terminal, debe coincidir con ese tipo. Se consume un token.
+- Si es un no terminal A, se consulta M[A, tipo]. Se sustituye A por el lado derecho de la producción, apilado en orden inverso.
+- Si la producción deriva epsilon, no se agregan símbolos de entrada.
+- Si falta la celda de tabla o no coincide un terminal, se informa el primer error y se detiene el reconocimiento.
+
+Solo se acepta después de reconocer Programa y cotejar $ con el fin real de los tokens. No se aceptan programas vacíos ni tokens sobrantes después de una regla. No hay retroceso ni recuperación automática de errores.
+
+Cada expansión deja además una marca de reducción con el nombre del no terminal y su cantidad de hijos. Una segunda pila almacena tokens reconocidos y valores semánticos. Al alcanzar una marca, se retiran sus hijos, se aplica _reducir y se apila el resultado. El mismo recorrido reconoce la entrada y construye el AST.
+
+Las pilas son listas de Python; el reconocimiento no usa recursión de funciones. Resto y las colas lógicas se representan temporalmente con pares enlazados para evitar copiar listas de tamaño creciente. El reconocimiento es lineal en el número de tokens para esta gramática fija, sin contar el coste de convertir los números; el almacenamiento es lineal en el tamaño de la entrada y del AST.
+
+3. Construcción y significado del AST
+
+La representación utiliza estos nodos:
+
+- Programa: lista ordenada de reglas.
+- Regla: condicion y accion.
+- Comparacion: identificador, operador relacional concreto y valor.
+- Numero: valor entero de Python.
+- Booleano: valor True o False de Python.
+- Logica: operador AND u OR, izquierda y derecha.
+- Negacion: operando de NOT.
+- Accion: verbo y destino conservados como identificadores.
+
+Las producciones 1 a 3 reúnen las reglas; la 4 crea Regla. Las producciones 5 a 10 acumulan las operaciones lógicas. Las 11 a 13 implementan negación, agrupación y comparación. La 14 crea Comparacion; las 15 a 17 convierten el valor; la 18 crea Accion.
+
+Termino procesa AND dentro de Expr, de modo que AND tiene mayor prioridad que OR. Cada cola se recorre de izquierda a derecha para producir asociación izquierda, aunque la gramática esté escrita con recursión derecha. Unaria construye NOT sobre su operando completo y permite negaciones repetidas. Los paréntesis devuelven el AST de la expresión interior; se omiten como nodos porque la agrupación ya queda expresada en las relaciones entre hijos.
+
+Por ejemplo, V04 produce AND(NOT(OR(lluvia == TRUE, humedad > 60)), nivel != 0), seguido por la acción encender bomba. El AST completo está en ejemplos/arbol_v04.json. Su versión jerárquica está en ejemplos/arbol_v04.txt y puede regenerarse con formatear_arbol de agroreglas/arbol.py. Esta presentación también usa una pila para recorrer el árbol.
+
+El parser comprueba sintaxis. No evalúa condiciones, no ejecuta acciones ni valida la existencia de sensores o dispositivos. Tampoco realiza comprobación semántica de tipos.
+
+4. Ubicaciones y errores
+
+El lexer del notebook devuelve pares sin posiciones. _ubicar recorre el texto original en orden, descarta únicamente espacio, tabulador y LF, y comprueba cada lexema en su posición. Así conserva las reglas léxicas del docente sin copiar el lexer. No busca lexemas con find, lo que evitaría detectar texto omitido. Los tipos se toman del lexer, que es responsable de clasificarlos correctamente.
+
+El desplazamiento cuenta caracteres Unicode desde cero. Línea y columna parten de uno. Un tabulador cuenta como un carácter, no como varias columnas visuales. EOF se ubica después del último carácter, incluidos los espacios finales. El contrato léxico no admite CR; la futura lectura de archivos debe definir su normalización.
+
+ErrorSintactico conserva el token, el símbolo pendiente y los tipos esperados. como_dict devuelve estos datos para automatizar las comprobaciones. El mensaje incluye causa, lexema encontrado, línea, columna y desplazamiento. Para una fila vacía de la tabla, los tipos esperados son sus columnas ocupadas; para un terminal obligatorio, se informa ese terminal. Por ejemplo, la falta de ; en I05 se informa en línea 1, columna 37, ante fin de entrada. Los cinco errores de Fernando coinciden exactamente con las posiciones y símbolos de especificacion/casos.json.
+
+Los caracteres desconocidos siguen siendo errores léxicos ValueError del notebook. La ubicación agregada por este módulo corresponde a los errores sintácticos.
+
+5. Pruebas y resultados
+
+Ejecutar:
+
+    python -m unittest discover -s pruebas -v
+    python herramientas/validar_gramatica.py
+
+Las cinco pruebas V01 a V05 comparan el AST completo con estructuras esperadas construidas de manera independiente. También comparan los tokens reales del notebook con los publicados en la especificación.
+
+V01 verifica la regla numérica; V02, FALSE; V03, AND antes de OR y TRUE; V04, NOT sobre un grupo y su combinación con AND; V05, negación repetida, paréntesis anidados y dos reglas en orden.
+
+La suite también comprueba los cinco casos inválidos de Fernando, asociación izquierda de ambos conectores, errores en varias líneas con dígitos Unicode, entrada vacía, texto sobrante, EOF tras espacios y desacuerdos entre tokens y fuente. Una prueba acotada comprueba 1100 grupos y 1100 reglas para verificar que el parser no depende del límite de recursión de Python.
+
+Resultado obtenido: 12 métodos de prueba aprobados, incluyendo subcasos, y verificación estática con 18 producciones, 25 celdas ocupadas y cero conflictos LL(1). La demostración acepta V01 a V05 y rechaza I01 a I05 con las ubicaciones esperadas. Esto valida la entrega de Juanfra; el conjunto final de 25 entradas distintas y su tabla de resultados queda a cargo de Vicente.
+
+6. Ejemplo y capturas para el informe
+
+Para regenerar las salidas, el AST y las páginas de evidencia:
+
+    python -m herramientas.evidencia_parser
+
+Este comando ejecuta la demostración y la suite, y falla si esta última no pasa. Guarda ejecucion.txt, pruebas.txt, ejecucion.html y arbol.html en docs/evidencias, además de los dos archivos del árbol en ejemplos.
+
+Las capturas ejecucion.png y arbol.png muestran esas páginas HTML con salida real de Python. Son capturas de presentación en navegador, no del escritorio o de una terminal interactiva. Las páginas se generan escapando la salida, sin modificar los resultados. Si cambia la implementación o la evidencia, se deben volver a capturar las páginas para actualizar los PNG.
+
+Vicente puede incorporar al informe la captura de aceptación y errores, la captura del árbol, esta sección y los ejemplos JSON/texto. Debe conservar la distinción entre los resultados obtenidos aquí y las nuevas pruebas de integración que agregue.
+
+7. Límites prácticos
+
+La profundidad del reconocimiento no depende de la pila de llamadas de Python. Las restricciones prácticas son la memoria disponible y las conversiones o serializadores de Python: por ejemplo, la conversión de enteros decimales extremadamente largos puede estar limitada por la configuración del intérprete, y json.dumps puede alcanzar su límite de recursión al exportar un AST con muchísimas negaciones. La presentación jerárquica usa recorrido iterativo. No se cambia la configuración global del intérprete.

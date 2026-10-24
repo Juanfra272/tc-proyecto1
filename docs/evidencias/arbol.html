@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><title>AgroReglas: AST de V04</title>
+<style>
+body { margin: 0; font-family: system-ui, sans-serif; color: #182c26; }
+h1 { font-size: 22px; margin: 0 0 12px; }
+main { padding: 24px; background: #f4f7f5; }
+pre { padding: 18px; background: #152a23; color: #ebf3ef; border-radius: 8px;
+font: 13px/1.55 monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+p { font-size: 13px; }
+</style><main><h1>AgroReglas: AST de V04</h1>
+<p>Salida real de Python. Página preparada para capturar e incorporar al informe.</p>
+<pre>WHEN NOT (lluvia == TRUE OR humedad &gt; 60) AND nivel != 0 THEN encender bomba;
+
+Programa
+  Regla
+    AND
+      NOT
+        OR
+          Comparacion lluvia ==
+            Booleano True
+          Comparacion humedad &gt;
+            Numero 60
+      Comparacion nivel !=
+        Numero 0
+    Accion encender bomba
+</pre></main></html>

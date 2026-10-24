@@ -1,0 +1,17 @@
+test_asociacion_izquierda_para_ambos_conectores (test_parser.PruebasParser.test_asociacion_izquierda_para_ambos_conectores) ... ok
+test_cinco_errores_de_fernando (test_parser.PruebasParser.test_cinco_errores_de_fernando) ... ok
+test_contrato_tokens_y_fuente (test_parser.PruebasParser.test_contrato_tokens_y_fuente) ... ok
+test_entrada_vacia_y_texto_sobrante (test_parser.PruebasParser.test_entrada_vacia_y_texto_sobrante) ... ok
+test_eof_tras_espacios (test_parser.PruebasParser.test_eof_tras_espacios) ... ok
+test_pila_no_depende_del_limite_de_recursion (test_parser.PruebasParser.test_pila_no_depende_del_limite_de_recursion) ... ok
+test_ubicacion_multilinea_y_numero_unicode (test_parser.PruebasParser.test_ubicacion_multilinea_y_numero_unicode) ... ok
+test_v01_regla_numerica (test_parser.PruebasParser.test_v01_regla_numerica) ... ok
+test_v02_booleano (test_parser.PruebasParser.test_v02_booleano) ... ok
+test_v03_precedencia (test_parser.PruebasParser.test_v03_precedencia) ... ok
+test_v04_negacion_y_grupo (test_parser.PruebasParser.test_v04_negacion_y_grupo) ... ok
+test_v05_anidamiento_y_varias_reglas (test_parser.PruebasParser.test_v05_anidamiento_y_varias_reglas) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.030s
+
+OK

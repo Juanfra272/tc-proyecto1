@@ -1,0 +1,51 @@
+{
+  "tipo": "Programa",
+  "reglas": [
+    {
+      "tipo": "Regla",
+      "condicion": {
+        "tipo": "Logica",
+        "operador": "AND",
+        "izquierda": {
+          "tipo": "Negacion",
+          "operando": {
+            "tipo": "Logica",
+            "operador": "OR",
+            "izquierda": {
+              "tipo": "Comparacion",
+              "identificador": "lluvia",
+              "operador": "==",
+              "valor": {
+                "tipo": "Booleano",
+                "valor": true
+              }
+            },
+            "derecha": {
+              "tipo": "Comparacion",
+              "identificador": "humedad",
+              "operador": ">",
+              "valor": {
+                "tipo": "Numero",
+                "valor": 60
+              }
+            }
+          }
+        },
+        "derecha": {
+          "tipo": "Comparacion",
+          "identificador": "nivel",
+          "operador": "!=",
+          "valor": {
+            "tipo": "Numero",
+            "valor": 0
+          }
+        }
+      },
+      "accion": {
+        "tipo": "Accion",
+        "verbo": "encender",
+        "destino": "bomba"
+      }
+    }
+  ]
+}
