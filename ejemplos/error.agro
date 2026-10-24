@@ -1,0 +1,3 @@
+WHEN humedad < 30 THEN abrir valvula;
+WHEN (temperatura > 35 OR viento > 40
+	THEN desplegar malla;

@@ -1,6 +1,6 @@
 {
   "especificacion": "AgroReglas 1.0",
-  "estado": "Resultados esperados; pendiente ejecución con el parser",
+  "estado": "Resultados esperados; los comprueba pruebas/test_casos.py.",
   "ubicaciones": "Desplazamiento desde 0, línea y columna desde 1, caracteres Unicode; EOF inmediatamente después del último carácter.",
   "casos": [
     {
@@ -371,6 +371,7 @@
       "id": "I01",
       "entrada": "WHEN humedad < THEN abrir valvula;",
       "resultado_esperado": "rechazar",
+      "propiedad": "Falta el valor después del operador relacional",
       "tokens_esperados": [
         [
           "WHEN",
@@ -402,6 +403,7 @@
         ]
       ],
       "error_esperado": {
+        "tipo_error": "sintactico",
         "desplazamiento": 15,
         "linea": 1,
         "columna": 16,
@@ -420,6 +422,7 @@
       "id": "I02",
       "entrada": "WHEN humedad < 30 AND THEN abrir valvula;",
       "resultado_esperado": "rechazar",
+      "propiedad": "Falta la condición después de AND",
       "tokens_esperados": [
         [
           "WHEN",
@@ -459,6 +462,7 @@
         ]
       ],
       "error_esperado": {
+        "tipo_error": "sintactico",
         "desplazamiento": 22,
         "linea": 1,
         "columna": 23,
@@ -477,6 +481,7 @@
       "id": "I03",
       "entrada": "WHEN () THEN abrir valvula;",
       "resultado_esperado": "rechazar",
+      "propiedad": "Grupo vacío",
       "tokens_esperados": [
         [
           "WHEN",
@@ -508,6 +513,7 @@
         ]
       ],
       "error_esperado": {
+        "tipo_error": "sintactico",
         "desplazamiento": 6,
         "linea": 1,
         "columna": 7,
@@ -526,6 +532,7 @@
       "id": "I04",
       "entrada": "WHEN (humedad < 30 THEN abrir valvula;",
       "resultado_esperado": "rechazar",
+      "propiedad": "Falta el paréntesis de cierre",
       "tokens_esperados": [
         [
           "WHEN",
@@ -565,6 +572,7 @@
         ]
       ],
       "error_esperado": {
+        "tipo_error": "sintactico",
         "desplazamiento": 19,
         "linea": 1,
         "columna": 20,
@@ -581,6 +589,7 @@
       "id": "I05",
       "entrada": "WHEN humedad < 30 THEN abrir valvula",
       "resultado_esperado": "rechazar",
+      "propiedad": "Falta el punto y coma final",
       "tokens_esperados": [
         [
           "WHEN",
@@ -612,6 +621,7 @@
         ]
       ],
       "error_esperado": {
+        "tipo_error": "sintactico",
         "desplazamiento": 36,
         "linea": 1,
         "columna": 37,
@@ -622,6 +632,178 @@
           "PUNTO_COMA"
         ],
         "mensaje_orientativo": "Se esperaba ; al final de la regla."
+      }
+    },
+    {
+      "id": "V06",
+      "entrada": "WHEN temperatura > 35 AND radiacion >= 800 AND viento <= 20 THEN desplegar malla;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "AND encadenado con asociación izquierda"
+    },
+    {
+      "id": "V07",
+      "entrada": "WHEN plaga == TRUE OR hongo == TRUE OR humedad > 85 THEN notificar agronomo;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "OR encadenado con valores booleanos y numéricos"
+    },
+    {
+      "id": "V08",
+      "entrada": "WHEN NOT helada == TRUE AND temperatura > 2 THEN abrir invernadero;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "NOT sin paréntesis niega solo la primera comparación"
+    },
+    {
+      "id": "V09",
+      "entrada": "WHEN (ph < 5 OR ph > 8) AND (riego_activo == FALSE) THEN corregir ph;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Dos grupos, uno con una sola comparación"
+    },
+    {
+      "id": "V10",
+      "entrada": "WHEN hora == 6 THEN iniciar riego;\nWHEN hora == 8 THEN detener riego;\nWHEN tanque < 10 THEN llenar tanque;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Tres reglas en líneas distintas"
+    },
+    {
+      "id": "I06",
+      "entrada": "WHEN humedad 30 THEN abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "propiedad": "Falta el operador relacional",
+      "error_esperado": {
+        "tipo_error": "sintactico",
+        "desplazamiento": 13,
+        "linea": 1,
+        "columna": 14,
+        "token_encontrado": "NUM",
+        "lexema_encontrado": "30",
+        "simbolo_pendiente": "OP_REL",
+        "tokens_esperados": [
+          "OP_REL"
+        ]
+      }
+    },
+    {
+      "id": "I07",
+      "entrada": "WHEN humedad < 30 abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "propiedad": "Falta THEN entre la condición y la acción",
+      "error_esperado": {
+        "tipo_error": "sintactico",
+        "desplazamiento": 18,
+        "linea": 1,
+        "columna": 19,
+        "token_encontrado": "ID",
+        "lexema_encontrado": "abrir",
+        "simbolo_pendiente": "ColaAND",
+        "tokens_esperados": [
+          "AND",
+          "OR",
+          "PARENT_DER",
+          "THEN"
+        ]
+      }
+    },
+    {
+      "id": "I08",
+      "entrada": "WHEN humedad < 30 THEN abrir;",
+      "resultado_esperado": "rechazar",
+      "propiedad": "Acción incompleta: falta el destino",
+      "error_esperado": {
+        "tipo_error": "sintactico",
+        "desplazamiento": 28,
+        "linea": 1,
+        "columna": 29,
+        "token_encontrado": "PUNTO_COMA",
+        "lexema_encontrado": ";",
+        "simbolo_pendiente": "ID",
+        "tokens_esperados": [
+          "ID"
+        ]
+      }
+    },
+    {
+      "id": "I09",
+      "entrada": "humedad < 30 THEN abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "propiedad": "La regla no comienza con WHEN",
+      "error_esperado": {
+        "tipo_error": "sintactico",
+        "desplazamiento": 0,
+        "linea": 1,
+        "columna": 1,
+        "token_encontrado": "ID",
+        "lexema_encontrado": "humedad",
+        "simbolo_pendiente": "Programa",
+        "tokens_esperados": [
+          "WHEN"
+        ]
+      }
+    },
+    {
+      "id": "I10",
+      "entrada": "WHEN humedad < 30) THEN abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "propiedad": "Paréntesis de cierre sin apertura",
+      "error_esperado": {
+        "tipo_error": "sintactico",
+        "desplazamiento": 17,
+        "linea": 1,
+        "columna": 18,
+        "token_encontrado": "PARENT_DER",
+        "lexema_encontrado": ")",
+        "simbolo_pendiente": "THEN",
+        "tokens_esperados": [
+          "THEN"
+        ]
+      }
+    },
+    {
+      "id": "L01",
+      "entrada": " \n\t",
+      "resultado_esperado": "rechazar",
+      "propiedad": "Entrada sin reglas, solo espacios",
+      "error_esperado": {
+        "tipo_error": "sintactico",
+        "desplazamiento": 3,
+        "linea": 2,
+        "columna": 2,
+        "token_encontrado": "$",
+        "lexema_encontrado": "",
+        "simbolo_pendiente": "Programa",
+        "tokens_esperados": [
+          "WHEN"
+        ]
+      }
+    },
+    {
+      "id": "L02",
+      "entrada": "when Humedad < 30 then Abrir Valvula;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Palabras reservadas en minúsculas y nombres con mayúsculas"
+    },
+    {
+      "id": "L03",
+      "entrada": "WHEN NOT NOT NOT ((((nivel == 0)))) THEN apagar bomba;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Negación triple y cuatro paréntesis redundantes"
+    },
+    {
+      "id": "L04",
+      "entrada": "WHEN WHEN_sensor >= 007 AND not_listo == 0 THEN abrir valvula;",
+      "resultado_esperado": "aceptar",
+      "propiedad": "Identificadores que empiezan con palabras reservadas y ceros a la izquierda"
+    },
+    {
+      "id": "L05",
+      "entrada": "WHEN humedad < 3.5 THEN abrir valvula;",
+      "resultado_esperado": "rechazar",
+      "propiedad": "Número decimal: el punto no pertenece al alfabeto",
+      "error_esperado": {
+        "tipo_error": "lexico",
+        "desplazamiento": 16,
+        "linea": 1,
+        "columna": 17,
+        "lexema_encontrado": "."
       }
     }
   ]

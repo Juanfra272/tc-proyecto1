@@ -1,0 +1,3 @@
+WHEN humedad < 30 AND lluvia == FALSE THEN abrir valvula;
+WHEN NOT (temperatura < 35 OR sombra == TRUE) THEN desplegar malla;
+WHEN nivel == 0 THEN apagar bomba;

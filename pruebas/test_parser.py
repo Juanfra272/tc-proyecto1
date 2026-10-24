@@ -1,11 +1,10 @@
-"""Pruebas de Juanfra: cinco válidas con AST completo y contrato de errores."""
+"""Pruebas de Juanfra: AST completo de V01 a V05 y contrato de errores."""
 
 import json
 from pathlib import Path
 import unittest
 
-from agroreglas import ErrorSintactico, analizar_tokens
-from herramientas.demo_parser import cargar_lexer_notebook
+from agroreglas import ErrorSintactico, analizador_lexico, analizar_tokens
 
 RAIZ = Path(__file__).resolve().parents[1]
 CASOS = {c["id"]: c for c in json.loads(
@@ -42,9 +41,7 @@ def programa(*reglas):
 
 
 class PruebasParser(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.lexer = staticmethod(cargar_lexer_notebook())
+    lexer = staticmethod(analizador_lexico)
 
     def analizar(self, fuente):
         return analizar_tokens(self.lexer(fuente), fuente)
@@ -82,20 +79,6 @@ class PruebasParser(unittest.TestCase):
                 logica("OR", comparacion("lluvia", "==", booleano(False)),
                        comparacion("reserva", ">", numero(0)))))), "abrir", "valvula"),
             regla(comparacion("nivel", "==", numero(0)), "apagar", "bomba")))
-
-    def test_cinco_errores_de_fernando(self):
-        for identificador in ("I01", "I02", "I03", "I04", "I05"):
-            with self.subTest(caso=identificador):
-                caso = CASOS[identificador]
-                with self.assertRaises(ErrorSintactico) as capturado:
-                    self.analizar(caso["entrada"])
-                obtenido = capturado.exception.como_dict()
-                esperado = caso["error_esperado"]
-                for campo in obtenido:
-                    if campo == "tokens_esperados":
-                        self.assertEqual(set(obtenido[campo]), set(esperado[campo]))
-                    else:
-                        self.assertEqual(obtenido[campo], esperado[campo])
 
     def test_asociacion_izquierda_para_ambos_conectores(self):
         for operador in ("AND", "OR"):

@@ -1,39 +1,41 @@
-"""Demostración de Juanfra con el lexer original, sin copiarlo a un módulo.
+"""Ejecuta los 25 casos documentados y muestra la decisión del analizador en cada uno.
 
-Ejecutar: python -m herramientas.demo_parser
-Vicente podrá sustituir cargar_lexer_notebook por un import de su módulo.
+Ejecutar desde la raíz: python -m herramientas.demo_parser
 """
 
 import json
 from pathlib import Path
 
-from agroreglas import ErrorSintactico, analizar_tokens
+from agroreglas import ErrorLexico, ErrorSintactico, analizar_programa
 
 RAIZ = Path(__file__).resolve().parents[1]
 
 
-def cargar_lexer_notebook():
-    notebook = json.loads((RAIZ / "anlizador_lexico1.ipynb").read_text(encoding="utf-8"))
-    entorno = {}
-    # Solo la celda de definición local del docente; no se ejecuta el ejemplo.
-    exec(compile("".join(notebook["cells"][0]["source"]), "lexer_notebook", "exec"), entorno)
-    return entorno["analizador_lexico"]
+def cargar_casos():
+    return json.loads((RAIZ / "especificacion/casos.json").read_text(encoding="utf-8"))["casos"]
+
+
+def resultado(fuente):
+    """Devuelve (ast, None) si se acepta o (None, error) con el primer error léxico o sintáctico."""
+    try:
+        return analizar_programa(fuente), None
+    except (ErrorLexico, ErrorSintactico) as error:
+        return None, error
 
 
 def main():
-    lexer = cargar_lexer_notebook()
-    casos = json.loads((RAIZ / "especificacion/casos.json").read_text(encoding="utf-8"))["casos"]
+    casos = cargar_casos()
     for caso in casos:
-        print(f"{caso['id']}: {caso['entrada']}")
-        try:
-            ast = analizar_tokens(lexer(caso["entrada"]), caso["entrada"])
-        except ErrorSintactico as error:
+        ast, error = resultado(caso["entrada"])
+        print(f"{caso['id']}: {caso['entrada']!r}")
+        if error:
             print(f"RECHAZADO. {error}\n")
         else:
-            print(f"ACEPTADO. Reglas en AST: {len(ast['reglas'])}\n")
+            cantidad = len(ast["reglas"])
+            print(f"ACEPTADO. {cantidad} {'regla' if cantidad == 1 else 'reglas'} en el AST.\n")
     print("AST del caso V04:")
-    fuente = casos[3]["entrada"]
-    print(json.dumps(analizar_tokens(lexer(fuente), fuente), indent=2, ensure_ascii=False))
+    fuente = next(c["entrada"] for c in casos if c["id"] == "V04")
+    print(json.dumps(analizar_programa(fuente), indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
