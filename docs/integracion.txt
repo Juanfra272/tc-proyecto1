@@ -1,0 +1,55 @@
+AgroReglas: integración, ejecución y casos de prueba
+
+Autoría: Vicente.
+
+1. Lexer como módulo
+
+agroreglas/lexer.py contiene la función analizador_lexico de anlizador_lexico1.ipynb con las mismas expresiones regulares, el mismo orden de categorías y las mismas palabras reservadas. El notebook queda en el repositorio como referencia del docente; el paquete no depende de él.
+
+El único cambio es el error. Un carácter fuera del alfabeto lanza ErrorLexico, una subclase de ValueError, por lo que el código que esperaba ValueError sigue funcionando. ErrorLexico informa el desplazamiento, la línea y la columna con el mismo criterio que ErrorSintactico: desplazamiento desde 0 y línea y columna desde 1. Para comprobar la equivalencia se compararon los tokens del módulo y los del notebook en las 25 entradas de prueba y en cuatro entradas adicionales con dígitos Unicode, CR, un símbolo desconocido y saltos con tabulador. Ambos produjeron los mismos tokens y rechazaron las mismas entradas.
+
+2. Ejecución desde texto o archivo
+
+La función analizar_programa(fuente) del paquete une el lexer y el parser: devuelve el AST o lanza el primer ErrorLexico o ErrorSintactico. La línea de comandos usa esa función:
+
+    python -m agroreglas ejemplos/riego.agro
+    python -m agroreglas --texto "WHEN humedad < 30 THEN abrir valvula;"
+    python -m agroreglas ejemplos/riego.agro --json
+
+Un archivo de entrada es texto UTF-8 con una o más reglas. Los saltos de línea y los espacios solo separan tokens. Antes de analizar, el programa descarta el BOM inicial y convierte CRLF y CR en LF, tanto en archivos como en --texto. Así, un archivo guardado en Windows se analiza igual que uno guardado en Linux, sin cambiar el contrato léxico del notebook, que no admite CR.
+
+Si el programa es válido, se imprime ACEPTADO, la cantidad de reglas y el AST como árbol jerárquico de formatear_arbol. Con --json se imprime el mismo AST en JSON. Si es inválido, se imprime RECHAZADO, el mensaje del error y la línea de entrada con un ^ bajo la columna del problema. Los tabuladores de esa línea se copian en el margen del ^ para que quede alineado. El código de salida es 0 al aceptar, 1 al rechazar y 2 si el archivo no se puede leer.
+
+3. Casos de prueba
+
+especificacion/casos.json reúne 25 entradas distintas: los diez casos de Fernando (V01 a V05 e I01 a I05), cinco válidos nuevos (V06 a V10), cinco inválidos nuevos (I06 a I10) y cinco casos límite (L01 a L05). Cada caso declara su resultado esperado. Cada rechazo declara además la etapa del error, su ubicación, el token encontrado y, si es sintáctico, el símbolo pendiente y los tipos esperados. Estos datos se escribieron a partir de la gramática y de la tabla LL(1), antes de ejecutar el parser.
+
+Los válidos nuevos cubren lo que V01 a V05 no prueban: cadenas de tres AND, cadenas de tres OR, NOT sin paréntesis seguido de AND, dos grupos en una condición y un programa de tres reglas en líneas distintas. V08 confirma que NOT humedad == TRUE AND ... niega solo la primera comparación, como establece la precedencia de la sección 4.3 de Fernando.
+
+Los inválidos nuevos fallan en filas o terminales distintos de los de I01 a I05:
+
+| ID | Error | Símbolo pendiente |
+| --- | --- | --- |
+| I06 | Falta el operador relacional | OP_REL |
+| I07 | Falta THEN | ColaAND |
+| I08 | La acción no tiene destino | ID |
+| I09 | La regla no empieza con WHEN | Programa |
+| I10 | Paréntesis de cierre sin apertura | THEN |
+
+Los casos límite prueban los bordes del lenguaje: una entrada con solo espacios (L01), palabras reservadas en minúsculas (L02), negación triple con paréntesis redundantes (L03), identificadores que empiezan con WHEN o NOT y números con ceros a la izquierda (L04), y un número decimal que el lexer rechaza en el punto (L05). Las pruebas de Juanfra completan estos casos con 1100 paréntesis anidados, 1100 reglas, texto sobrante después de una regla y errores en varias líneas.
+
+4. Automatización y resultados
+
+    python -m unittest discover -s pruebas -v
+
+pruebas/test_casos.py recorre los 25 casos. En cada uno compara el resultado obtenido con el esperado y, si hay rechazo, compara la etapa, la ubicación, el token y los tipos esperados. En los diez casos de Fernando compara también los tokens del lexer con los publicados. Otras cinco pruebas ejecutan la línea de comandos con texto, con texto CRLF, con un archivo con BOM y CRLF que contiene un error en la segunda línea, con un error léxico y con un archivo inexistente. pruebas/test_parser.py conserva las pruebas de Juanfra que comparan el AST completo de V01 a V05.
+
+Para comprobar que las pruebas detectan fallos, se cambió una columna esperada en casos.json: la prueba falló en ese caso y volvió a pasar al restaurar el valor.
+
+Resultado obtenido: 18 métodos de prueba aprobados y 25 de 25 casos con el resultado esperado. La tabla completa con entrada, resultado esperado, resultado obtenido y observación está en docs/resultados_casos.txt.
+
+5. Evidencia
+
+    python -m herramientas.evidencia_parser
+
+El comando ejecuta los 25 casos y la suite, y se detiene si alguna prueba falla. Regenera docs/resultados_casos.txt, las salidas de texto y las páginas HTML de docs/evidencias, incluida cli.html con la ejecución desde archivo y desde texto. La salida de los 25 casos se divide en ejecucion.html y ejecucion-nuevos.html para que cada captura sea legible. Las capturas PNG se toman de esas páginas, por lo que muestran la salida real de Python.
