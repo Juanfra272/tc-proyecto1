@@ -25,22 +25,22 @@ V10: &#x27;WHEN hora == 6 THEN iniciar riego;\nWHEN hora == 8 THEN detener riego
 ACEPTADO. 3 reglas en el AST.
 
 I06: &#x27;WHEN humedad 30 THEN abrir valvula;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba OP_REL; se encontró &#x27;30&#x27;. Símbolo pendiente: OP_REL.
+RECHAZADO. Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba un operador relacional (&gt;, &lt;, &gt;=, &lt;=, ==, !=); se encontró &#x27;30&#x27;.
 
 I07: &#x27;WHEN humedad &lt; 30 abrir valvula;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba AND, OR, &#x27;)&#x27; para cerrar el grupo, THEN; se encontró &#x27;abrir&#x27;. Símbolo pendiente: ColaAND.
+RECHAZADO. Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba THEN, AND, OR; se encontró &#x27;abrir&#x27;.
 
 I08: &#x27;WHEN humedad &lt; 30 THEN abrir;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró &#x27;;&#x27;. Símbolo pendiente: ID.
+RECHAZADO. Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró &#x27;;&#x27;.
 
 I09: &#x27;humedad &lt; 30 THEN abrir valvula;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró &#x27;humedad&#x27;. Símbolo pendiente: Programa.
+RECHAZADO. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró &#x27;humedad&#x27;.
 
 I10: &#x27;WHEN humedad &lt; 30) THEN abrir valvula;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 18 (desplazamiento 17): se esperaba THEN; se encontró &#x27;)&#x27;. Símbolo pendiente: THEN.
+RECHAZADO. Error sintáctico en línea 1, columna 18 (desplazamiento 17): se esperaba THEN; se encontró &#x27;)&#x27;.
 
 L01: &#x27; \n\t&#x27;
-RECHAZADO. Error sintáctico en línea 2, columna 2 (desplazamiento 3): se esperaba WHEN; se encontró fin de entrada. Símbolo pendiente: Programa.
+RECHAZADO. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró fin de entrada.
 
 L02: &#x27;when Humedad &lt; 30 then Abrir Valvula;&#x27;
 ACEPTADO. 1 regla en el AST.

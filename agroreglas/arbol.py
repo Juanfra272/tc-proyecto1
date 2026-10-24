@@ -22,7 +22,9 @@ def formatear_arbol(ast):
         elif tipo == "Comparacion":
             etiqueta = f"Comparacion {nodo['identificador']} {nodo['operador']}"
             hijos = [nodo["valor"]]
-        elif tipo in {"Numero", "Booleano"}:
+        elif tipo == "Booleano":
+            etiqueta = "Booleano " + ("TRUE" if nodo["valor"] else "FALSE")
+        elif tipo == "Numero":
             etiqueta = f"{tipo} {nodo['valor']}"
         elif tipo == "Accion":
             etiqueta = f"Accion {nodo['verbo']} {nodo['destino']}"

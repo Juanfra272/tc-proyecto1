@@ -38,7 +38,7 @@ Si es inválido, se imprime el primer error y se señala su posición:
 
 ```text
 $ python -m agroreglas ejemplos/error.agro
-RECHAZADO. Error sintáctico en línea 3, columna 2 (desplazamiento 77): se esperaba ')' para cerrar el grupo; se encontró 'THEN'. Símbolo pendiente: PARENT_DER.
+RECHAZADO. Error sintáctico en línea 3, columna 2 (desplazamiento 77): se esperaba ')' para cerrar el grupo; se encontró 'THEN'.
   	THEN desplegar malla;
   	^
 ```

@@ -7,7 +7,7 @@ Programa
       Comparacion humedad <
         Numero 30
       Comparacion lluvia ==
-        Booleano False
+        Booleano FALSE
     Accion abrir valvula
   Regla
     NOT
@@ -15,7 +15,7 @@ Programa
         Comparacion temperatura <
           Numero 35
         Comparacion sombra ==
-          Booleano True
+          Booleano TRUE
     Accion desplegar malla
   Regla
     Comparacion nivel ==
@@ -24,7 +24,7 @@ Programa
 (código de salida 0)
 
 $ python -m agroreglas ejemplos/error.agro
-RECHAZADO. Error sintáctico en línea 3, columna 2 (desplazamiento 77): se esperaba ')' para cerrar el grupo; se encontró 'THEN'. Símbolo pendiente: PARENT_DER.
+RECHAZADO. Error sintáctico en línea 3, columna 2 (desplazamiento 77): se esperaba ')' para cerrar el grupo; se encontró 'THEN'.
   	THEN desplegar malla;
   	^
 (código de salida 1)

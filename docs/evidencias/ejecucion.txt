@@ -15,19 +15,19 @@ V05: 'WHEN NOT NOT (humedad < 30 AND (lluvia == FALSE OR reserva > 0)) THEN abri
 ACEPTADO. 2 reglas en el AST.
 
 I01: 'WHEN humedad < THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba FALSE, un número, TRUE; se encontró 'THEN'. Símbolo pendiente: Valor.
+RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba un número, TRUE, FALSE; se encontró 'THEN'.
 
 I02: 'WHEN humedad < 30 AND THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, NOT, '('; se encontró 'THEN'. Símbolo pendiente: Unaria.
+RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, '(', NOT; se encontró 'THEN'.
 
 I03: 'WHEN () THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, NOT, '('; se encontró ')'. Símbolo pendiente: Expr.
+RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, '(', NOT; se encontró ')'.
 
 I04: 'WHEN (humedad < 30 THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba ')' para cerrar el grupo; se encontró 'THEN'. Símbolo pendiente: PARENT_DER.
+RECHAZADO. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba ')' para cerrar el grupo; se encontró 'THEN'.
 
 I05: 'WHEN humedad < 30 THEN abrir valvula'
-RECHAZADO. Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba ';' al final de la regla; se encontró fin de entrada. Símbolo pendiente: PUNTO_COMA.
+RECHAZADO. Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba ';' al final de la regla; se encontró fin de entrada.
 
 V06: 'WHEN temperatura > 35 AND radiacion >= 800 AND viento <= 20 THEN desplegar malla;'
 ACEPTADO. 1 regla en el AST.
@@ -45,22 +45,22 @@ V10: 'WHEN hora == 6 THEN iniciar riego;\nWHEN hora == 8 THEN detener riego;\nWH
 ACEPTADO. 3 reglas en el AST.
 
 I06: 'WHEN humedad 30 THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba OP_REL; se encontró '30'. Símbolo pendiente: OP_REL.
+RECHAZADO. Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba un operador relacional (>, <, >=, <=, ==, !=); se encontró '30'.
 
 I07: 'WHEN humedad < 30 abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba AND, OR, ')' para cerrar el grupo, THEN; se encontró 'abrir'. Símbolo pendiente: ColaAND.
+RECHAZADO. Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba THEN, AND, OR; se encontró 'abrir'.
 
 I08: 'WHEN humedad < 30 THEN abrir;'
-RECHAZADO. Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró ';'. Símbolo pendiente: ID.
+RECHAZADO. Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró ';'.
 
 I09: 'humedad < 30 THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró 'humedad'. Símbolo pendiente: Programa.
+RECHAZADO. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró 'humedad'.
 
 I10: 'WHEN humedad < 30) THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 18 (desplazamiento 17): se esperaba THEN; se encontró ')'. Símbolo pendiente: THEN.
+RECHAZADO. Error sintáctico en línea 1, columna 18 (desplazamiento 17): se esperaba THEN; se encontró ')'.
 
 L01: ' \n\t'
-RECHAZADO. Error sintáctico en línea 2, columna 2 (desplazamiento 3): se esperaba WHEN; se encontró fin de entrada. Símbolo pendiente: Programa.
+RECHAZADO. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró fin de entrada.
 
 L02: 'when Humedad < 30 then Abrir Valvula;'
 ACEPTADO. 1 regla en el AST.

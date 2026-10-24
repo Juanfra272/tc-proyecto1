@@ -6,7 +6,7 @@ Programa
       NOT
         OR
           Comparacion lluvia ==
-            Booleano True
+            Booleano TRUE
           Comparacion humedad >
             Numero 60
       Comparacion nivel !=

@@ -26,19 +26,22 @@ class ErrorSintactico(ValueError):
     def __init__(self, token, simbolo, esperados):
         self.token = token
         self.simbolo_pendiente = simbolo
-        self.tokens_esperados = tuple(sorted(esperados))
         encontrado = "fin de entrada" if token.tipo == "$" else repr(token.lexema)
         nombres = {
             "NUM": "un número", "TRUE": "TRUE", "FALSE": "FALSE",
             "ID": "un identificador", "PARENT_IZQ": "'('",
             "PARENT_DER": "')' para cerrar el grupo",
+            "OP_REL": "un operador relacional (>, <, >=, <=, ==, !=)",
+            "THEN": "THEN", "AND": "AND", "OR": "OR", "NOT": "NOT",
+            "WHEN": "WHEN", "$": "fin de entrada",
             "PUNTO_COMA": "';' al final de la regla",
         }
-        esperado = ", ".join(nombres.get(t, t) for t in self.tokens_esperados)
+        self.tokens_esperados = tuple(t for t in nombres if t in esperados)
+        esperado = ", ".join(nombres[t] for t in self.tokens_esperados)
         super().__init__(
             f"Error sintáctico en línea {token.linea}, columna {token.columna} "
             f"(desplazamiento {token.desplazamiento}): se esperaba {esperado}; "
-            f"se encontró {encontrado}. Símbolo pendiente: {simbolo}."
+            f"se encontró {encontrado}."
         )
 
     def como_dict(self):
@@ -79,11 +82,12 @@ def _ubicar(tokens, fuente):
             raise ValueError(f"Tokens y fuente no coinciden en desplazamiento {posicion}.")
         ubicados.append(Token(tipo, lexema, posicion, linea, columna))
         avanzar(lexema)
+    fin = (posicion, linea, columna)
     while posicion < len(fuente) and fuente[posicion] in " \t\n":
         avanzar(fuente[posicion])
     if posicion != len(fuente):
         raise ValueError(f"Hay texto sin tokenizar en desplazamiento {posicion}.")
-    ubicados.append(Token("$", "", posicion, linea, columna))
+    ubicados.append(Token("$", "", *fin))
     return ubicados
 
 
@@ -170,7 +174,11 @@ def analizar_tokens(tokens, fuente):
         if simbolo in _GRAMATICA["producciones"]:
             numero = _TABLA.get((simbolo, actual.tipo))
             if numero is None:
-                raise ErrorSintactico(actual, simbolo, _ESPERADOS[simbolo])
+                esperados = _ESPERADOS[simbolo]
+                # FOLLOW reúne todos los contextos; aquí solo se cierran grupos abiertos.
+                if "PARENT_DER" in esperados and "PARENT_DER" not in pila:
+                    esperados = esperados - {"PARENT_DER"}
+                raise ErrorSintactico(actual, simbolo, esperados)
             _, rhs = _REGLAS[numero]
             pila.append((simbolo, len(rhs)))
             pila.extend(reversed(rhs))

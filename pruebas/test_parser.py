@@ -110,8 +110,37 @@ class PruebasParser(unittest.TestCase):
         fuente = "WHEN nivel == 0 THEN apagar bomba\n  "
         with self.assertRaises(ErrorSintactico) as capturado:
             self.analizar(fuente)
-        self.assertEqual(capturado.exception.token.desplazamiento, len(fuente))
-        self.assertEqual((capturado.exception.token.linea, capturado.exception.token.columna), (2, 3))
+        self.assertEqual(capturado.exception.token.desplazamiento, len(fuente.rstrip()))
+        self.assertEqual((capturado.exception.token.linea, capturado.exception.token.columna), (1, 34))
+
+    def test_mensajes_legibles_y_orden_de_valores(self):
+        for fuente, esperado in (
+            (CASOS["I06"]["entrada"], "un operador relacional"),
+            (CASOS["I01"]["entrada"], "un número, TRUE, FALSE"),
+            (CASOS["V01"]["entrada"] + " extra", "fin de entrada"),
+        ):
+            with self.subTest(fuente=fuente):
+                with self.assertRaises(ErrorSintactico) as capturado:
+                    self.analizar(fuente)
+                mensaje = str(capturado.exception)
+                self.assertIn(esperado, mensaje)
+                for interno in ("OP_REL", "$", "Símbolo pendiente", "Cola", "Resto"):
+                    self.assertNotIn(interno, mensaje)
+
+    def test_i07_no_sugiere_cerrar_grupo_inexistente(self):
+        with self.assertRaises(ErrorSintactico) as capturado:
+            self.analizar(CASOS["I07"]["entrada"])
+        self.assertNotIn("PARENT_DER", capturado.exception.tokens_esperados)
+        self.assertNotIn("cerrar", str(capturado.exception))
+        with self.assertRaises(ErrorSintactico) as capturado:
+            self.analizar("WHEN (a < 1 abrir valvula;")
+        self.assertIn("PARENT_DER", capturado.exception.tokens_esperados)
+
+    def test_booleanos_del_arbol_en_mayusculas(self):
+        from agroreglas.arbol import formatear_arbol
+        for valor in ("TRUE", "FALSE"):
+            arbol = formatear_arbol(self.analizar(f"WHEN a == {valor} THEN x y;"))
+            self.assertIn(f"Booleano {valor}", arbol)
 
     def test_pila_no_depende_del_limite_de_recursion(self):
         fuente = "WHEN " + "(" * 1100 + "nivel == 0" + ")" * 1100 + " THEN apagar bomba;"

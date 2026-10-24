@@ -26,17 +26,17 @@ V05: &#x27;WHEN NOT NOT (humedad &lt; 30 AND (lluvia == FALSE OR reserva &gt; 0)
 ACEPTADO. 2 reglas en el AST.
 
 I01: &#x27;WHEN humedad &lt; THEN abrir valvula;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba FALSE, un número, TRUE; se encontró &#x27;THEN&#x27;. Símbolo pendiente: Valor.
+RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba un número, TRUE, FALSE; se encontró &#x27;THEN&#x27;.
 
 I02: &#x27;WHEN humedad &lt; 30 AND THEN abrir valvula;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, NOT, &#x27;(&#x27;; se encontró &#x27;THEN&#x27;. Símbolo pendiente: Unaria.
+RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, &#x27;(&#x27;, NOT; se encontró &#x27;THEN&#x27;.
 
 I03: &#x27;WHEN () THEN abrir valvula;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, NOT, &#x27;(&#x27;; se encontró &#x27;)&#x27;. Símbolo pendiente: Expr.
+RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, &#x27;(&#x27;, NOT; se encontró &#x27;)&#x27;.
 
 I04: &#x27;WHEN (humedad &lt; 30 THEN abrir valvula;&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba &#x27;)&#x27; para cerrar el grupo; se encontró &#x27;THEN&#x27;. Símbolo pendiente: PARENT_DER.
+RECHAZADO. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba &#x27;)&#x27; para cerrar el grupo; se encontró &#x27;THEN&#x27;.
 
 I05: &#x27;WHEN humedad &lt; 30 THEN abrir valvula&#x27;
-RECHAZADO. Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba &#x27;;&#x27; al final de la regla; se encontró fin de entrada. Símbolo pendiente: PUNTO_COMA.
+RECHAZADO. Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba &#x27;;&#x27; al final de la regla; se encontró fin de entrada.
 </pre></main></html>

@@ -24,7 +24,7 @@ Generado por python -m herramientas.evidencia_parser. Cada rechazo indica la lí
 | I08 | `WHEN humedad < 30 THEN abrir;` | rechazar | rechazar, 1:29 | Acción incompleta: falta el destino |
 | I09 | `humedad < 30 THEN abrir valvula;` | rechazar | rechazar, 1:1 | La regla no comienza con WHEN |
 | I10 | `WHEN humedad < 30) THEN abrir valvula;` | rechazar | rechazar, 1:18 | Paréntesis de cierre sin apertura |
-| L01 | ` \n\t` | rechazar | rechazar, 2:2 | Entrada sin reglas, solo espacios |
+| L01 | ` \n\t` | rechazar | rechazar, 1:1 | Entrada sin reglas, solo espacios |
 | L02 | `when Humedad < 30 then Abrir Valvula;` | aceptar | aceptar | Palabras reservadas en minúsculas y nombres con mayúsculas |
 | L03 | `WHEN NOT NOT NOT ((((nivel == 0)))) THEN apagar bomba;` | aceptar | aceptar | Negación triple y cuatro paréntesis redundantes |
 | L04 | `WHEN WHEN_sensor >= 007 AND not_listo == 0 THEN abrir valvula;` | aceptar | aceptar | Identificadores que empiezan con palabras reservadas y ceros a la izquierda |

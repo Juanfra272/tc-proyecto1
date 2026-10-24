@@ -38,7 +38,7 @@ La representación utiliza estos nodos:
 - Regla: condicion y accion.
 - Comparacion: identificador, operador relacional concreto y valor.
 - Numero: valor entero de Python.
-- Booleano: valor True o False de Python.
+- Booleano: valor True o False de Python, presentado como TRUE o FALSE en el árbol.
 - Logica: operador AND u OR, izquierda y derecha.
 - Negacion: operando de NOT.
 - Accion: verbo y destino conservados como identificadores.
@@ -55,9 +55,9 @@ El parser comprueba sintaxis. No evalúa condiciones, no ejecuta acciones ni val
 
 El lexer devuelve pares sin posiciones. _ubicar recorre el texto original en orden, descarta únicamente espacio, tabulador y LF, y comprueba cada lexema en su posición. Así el parser no depende de cambiar las reglas léxicas del docente. No busca lexemas con find, lo que evitaría detectar texto omitido. Los tipos se toman del lexer, que es responsable de clasificarlos correctamente.
 
-El desplazamiento cuenta caracteres Unicode desde cero. Línea y columna parten de uno. Un tabulador cuenta como un carácter, no como varias columnas visuales. EOF se ubica después del último carácter, incluidos los espacios finales. El contrato léxico no admite CR; la lectura de archivos lo convierte en LF, como se describe en la sección de integración.
+El desplazamiento cuenta caracteres Unicode desde cero. Línea y columna parten de uno. Un tabulador cuenta como un carácter, no como varias columnas visuales. EOF se ubica inmediatamente después del último token, sin contar los espacios finales. Una entrada sin tokens se ubica en línea 1, columna 1. El contrato léxico no admite CR; la lectura de archivos lo convierte en LF, como se describe en la sección de integración.
 
-ErrorSintactico conserva el token, el símbolo pendiente y los tipos esperados. como_dict devuelve estos datos para automatizar las comprobaciones. El mensaje incluye causa, lexema encontrado, línea, columna y desplazamiento. Para una fila vacía de la tabla, los tipos esperados son sus columnas ocupadas; para un terminal obligatorio, se informa ese terminal. Por ejemplo, la falta de ; en I05 se informa en línea 1, columna 37, ante fin de entrada. Los cinco errores de Fernando coinciden exactamente con las posiciones y símbolos de especificacion/casos.json.
+ErrorSintactico conserva el token, el símbolo pendiente y los tipos esperados. como_dict devuelve estos datos para automatizar las comprobaciones. El mensaje incluye causa, lexema encontrado, línea, columna y desplazamiento. Para una fila vacía de la tabla, los tipos esperados son sus columnas ocupadas; para un terminal obligatorio, se informa ese terminal. Se descarta el cierre de grupo entre las alternativas cuando no hay un paréntesis abierto. Los tipos se presentan en un orden explícito: número, TRUE y FALSE para valores. El mensaje traduce los tipos internos a nombres legibles y reserva el símbolo pendiente para como_dict. Por ejemplo, la falta de ; en I05 se informa en línea 1, columna 37, ante fin de entrada. Los cinco errores de Fernando coinciden exactamente con las posiciones y símbolos de especificacion/casos.json.
 
 Los caracteres desconocidos son errores léxicos. El módulo del lexer los informa con ErrorLexico, una subclase de ValueError ubicada con el mismo criterio.
 

@@ -80,6 +80,14 @@ class PruebasCLI(unittest.TestCase):
         self.assertEqual(codigo, 1)
         self.assertIn("Error léxico en línea 1, columna 17", salida)
 
+    def test_eof_no_senala_linea_vacia_final(self):
+        for final in ("", "\n", "\n  ", "\n\n"):
+            with self.subTest(final=final):
+                codigo, salida = cli("-t", "WHEN a < 1 THEN x y" + final)
+                self.assertEqual(codigo, 1)
+                self.assertIn("línea 1, columna 20", salida)
+                self.assertTrue(salida.endswith("WHEN a < 1 THEN x y\n  " + " " * 19 + "^\n"))
+
     def test_archivo_inexistente(self):
         with contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(cli(str(RAIZ / "no_existe.agro"))[0], 2)

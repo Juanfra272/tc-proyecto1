@@ -28,7 +28,7 @@ El alfabeto relevante incluye letras ASCII, guion bajo, dígitos decimales, los 
 
 Las palabras reservadas se reconocen después de consumir el identificador completo. when produce el tipo WHEN, pero WHEN_sensor sigue siendo ID. El lexer conserva la escritura original del lexema. Los nombres se conservan tal como se escriben; no se define equivalencia semántica entre sensor y Sensor.
 
-Se reconocen primero los operadores relacionales de dos caracteres. Un carácter ajeno a las categorías produce ValueError. No hay comentarios, cadenas, números negativos, decimales ni separadores de acciones. El carácter CR \r no se descarta en el lexer actual. La lectura y eventual normalización de archivos deben documentarse en la etapa de integración; esta especificación no cambia el notebook.
+Se reconocen primero los operadores relacionales de dos caracteres. Un carácter ajeno a las categorías produce ValueError. No hay comentarios, cadenas, números negativos, decimales ni separadores de acciones. El carácter CR \r no se descarta en el lexer actual. La CLI normaliza CRLF y CR a LF antes del análisis, como se documenta en la sección de integración; esta especificación no cambia el notebook.
 
 El marcador $ representa fin de entrada y debe añadirlo el parser después de los tokens. No es un carácter aceptado por el lexer. ε representa la cadena vacía y tampoco es un token.
 
@@ -42,7 +42,7 @@ La acción consta exactamente de dos identificadores: verbo y destino. abrir val
 
 2.3 Cinco ejemplos válidos
 
-Son ejemplos de la especificación, no pruebas ejecutadas del futuro parser ni comprobaciones de AST. Los mismos textos se entregan en especificacion/casos.json.
+Son ejemplos de la especificación y forman parte de los 25 casos ejecutados del parser. Los cinco se aceptan; sus resultados y árboles se registran en docs/resultados_casos.txt y docs/evidencias/ejecucion.txt.
 
 | ID | Entrada | Propiedad ilustrada |
 | --- | --- | --- |
@@ -144,7 +144,7 @@ Por ejemplo, FIRST(Unaria) = {NOT, PARENT_IZQ, ID} por sus tres alternativas. FI
 
 De Regla → WHEN Expr THEN Accion PUNTO_COMA se obtiene THEN ∈ FOLLOW(Expr) y PUNTO_COMA ∈ FOLLOW(Accion). De la agrupación se obtiene PARENT_DER ∈ FOLLOW(Expr). Por tanto, FOLLOW(Expr) = {THEN, PARENT_DER}. Como ColaOR termina la producción de Expr, hereda ese FOLLOW. Termino puede ir seguido por OR, o por FOLLOW de Expr cuando ColaOR ⇒ ε. Análogamente, Unaria añade AND y hereda FOLLOW de Termino. Comparacion y Valor heredan FOLLOW de Unaria.
 
-Las tablas completas, para los once no terminales, están en first_follow_tabla.txt. Ese archivo forma parte de esta sección teórica y debe incorporarse al informe, junto con la tabla predictiva. Se genera desde la GLC formal del proyecto, para evitar divergencias de transcripción.
+Las tablas completas, para los once no terminales, están en first_follow_tabla.txt. El informe incorpora sus tablas FIRST y FOLLOW junto con la tabla predictiva. Se genera desde la GLC formal del proyecto, para evitar divergencias de transcripción.
 
 6. Construcción de la tabla LL(1)
 
@@ -164,7 +164,7 @@ Los demás puntos de elección son Unaria, con {NOT}, {PARENT_IZQ} e {ID}, y Val
 
 7. Cinco casos inválidos y resultados esperados
 
-Los cinco casos son errores sintácticos con tokens reconocibles por el lexer. Las ubicaciones usan línea y columna desde 1; el desplazamiento absoluto de casos.json cuenta caracteres desde 0. EOF se ubica inmediatamente después del último carácter. Se especifica el primer punto donde ya no puede continuar una derivación válida, sin consumir otro token para intentar reparar la entrada.
+Los cinco casos son errores sintácticos con tokens reconocibles por el lexer. Las ubicaciones usan línea y columna desde 1; el desplazamiento absoluto de casos.json cuenta caracteres desde 0. EOF se ubica inmediatamente después del último token, sin contar los espacios finales; una entrada sin tokens se ubica en 1:1. Se especifica el primer punto donde ya no puede continuar una derivación válida, sin consumir otro token para intentar reparar la entrada.
 
 | ID | Entrada | Línea:columna | Resultado esperado |
 | --- | --- | --- | --- |
@@ -174,9 +174,9 @@ Los cinco casos son errores sintácticos con tokens reconocibles por el lexer. L
 | I04 | WHEN (humedad < 30 THEN abrir valvula; | 1:20 | Rechazar en THEN: falta ) para cerrar el grupo |
 | I05 | WHEN humedad < 30 THEN abrir valvula | 1:37 | Rechazar en EOF: falta ; para terminar la regla |
 
-I01 falla en la fila Valor; I02 en Unaria; I03 en Expr. En I04, las colas internas pueden derivar ε ante THEN, pero el siguiente terminal obligatorio es PARENT_DER, por lo que allí se detecta la falta del cierre. I05 falla al cotejar el terminal PUNTO_COMA con $. Los mensajes propuestos expresan el contenido esperado; su redacción final debe preservar causa y ubicación.
+I01 falla en la fila Valor; I02 en Unaria; I03 en Expr. En I04, las colas internas pueden derivar ε ante THEN, pero el siguiente terminal obligatorio es PARENT_DER, por lo que allí se detecta la falta del cierre. I05 falla al cotejar el terminal PUNTO_COMA con $. Los mensajes de error identifican la causa y la ubicación del primer error.
 
-El JSON incluye los cinco ejemplos válidos y estos cinco inválidos, sus tipos de tokens, ubicaciones y resultados esperados. El campo resultado_esperado es una especificación; no representa un resultado obtenido del parser.
+El JSON incluye los cinco ejemplos válidos y estos cinco inválidos, sus tipos de tokens, ubicaciones y resultados esperados. El campo resultado_esperado describe el comportamiento definido para cada caso; los resultados obtenidos se contrastan en docs/resultados_casos.txt.
 
 8. Validación y alcance de la entrega
 
@@ -190,9 +190,9 @@ Para regenerar las tablas después de un cambio deliberado en la gramática:
 
 python herramientas/validar_gramatica.py --escribir
 
-La validación estática obtiene 18 producciones, 25 celdas ocupadas, cero conflictos, cero no terminales con recursión izquierda y ningún no terminal inaccesible o improductivo. No constituye una implementación del parser del proyecto ni ejecuta programas AgroReglas. No se utiliza un generador de parsers.
+La validación estática obtiene 18 producciones, 25 celdas ocupadas, cero conflictos, cero no terminales con recursión izquierda y ningún no terminal inaccesible o improductivo. El verificador comprueba las propiedades de la gramática; el parser implementado en agroreglas/parser.py reconoce los programas AgroReglas. No se utiliza un generador de parsers.
 
-La validación formal es coherente con el lexer existente. La comprobación empírica de aceptación y rechazo requiere la implementación del parser.
+La validación formal es coherente con el lexer existente. La ejecución de los 25 casos coincide con sus resultados esperados: se aceptan los diez casos V, los tres casos L aceptados y se rechazan los diez casos I y los dos casos L inválidos. La evidencia está en docs/resultados_casos.txt y docs/evidencias/ejecucion.txt.
 
 Referencias del proyecto
 

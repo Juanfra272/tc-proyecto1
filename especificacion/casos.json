@@ -1,7 +1,7 @@
 {
   "especificacion": "AgroReglas 1.0",
   "estado": "Resultados esperados; los comprueba pruebas/test_casos.py.",
-  "ubicaciones": "Desplazamiento desde 0, línea y columna desde 1, caracteres Unicode; EOF inmediatamente después del último carácter.",
+  "ubicaciones": "Desplazamiento desde 0, línea y columna desde 1, caracteres Unicode; EOF inmediatamente después del último token, sin espacios finales; entrada sin tokens en 1:1.",
   "casos": [
     {
       "id": "V01",
@@ -698,7 +698,6 @@
         "tokens_esperados": [
           "AND",
           "OR",
-          "PARENT_DER",
           "THEN"
         ]
       }
@@ -764,9 +763,9 @@
       "propiedad": "Entrada sin reglas, solo espacios",
       "error_esperado": {
         "tipo_error": "sintactico",
-        "desplazamiento": 3,
-        "linea": 2,
-        "columna": 2,
+        "desplazamiento": 0,
+        "linea": 1,
+        "columna": 1,
         "token_encontrado": "$",
         "lexema_encontrado": "",
         "simbolo_pendiente": "Programa",

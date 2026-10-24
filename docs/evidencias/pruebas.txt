@@ -1,14 +1,18 @@
 test_archivo_crlf_con_error_marca_la_columna (test_casos.PruebasCLI.test_archivo_crlf_con_error_marca_la_columna) ... ok
 test_archivo_inexistente (test_casos.PruebasCLI.test_archivo_inexistente) ... ok
+test_eof_no_senala_linea_vacia_final (test_casos.PruebasCLI.test_eof_no_senala_linea_vacia_final) ... ok
 test_error_lexico_ubicado (test_casos.PruebasCLI.test_error_lexico_ubicado) ... ok
 test_texto_aceptado_muestra_arbol (test_casos.PruebasCLI.test_texto_aceptado_muestra_arbol) ... ok
 test_texto_con_crlf (test_casos.PruebasCLI.test_texto_con_crlf) ... ok
 test_hay_25_casos_distintos (test_casos.PruebasCasos.test_hay_25_casos_distintos) ... ok
 test_resultado_y_error_de_cada_caso (test_casos.PruebasCasos.test_resultado_y_error_de_cada_caso) ... ok
 test_asociacion_izquierda_para_ambos_conectores (test_parser.PruebasParser.test_asociacion_izquierda_para_ambos_conectores) ... ok
+test_booleanos_del_arbol_en_mayusculas (test_parser.PruebasParser.test_booleanos_del_arbol_en_mayusculas) ... ok
 test_contrato_tokens_y_fuente (test_parser.PruebasParser.test_contrato_tokens_y_fuente) ... ok
 test_entrada_vacia_y_texto_sobrante (test_parser.PruebasParser.test_entrada_vacia_y_texto_sobrante) ... ok
 test_eof_tras_espacios (test_parser.PruebasParser.test_eof_tras_espacios) ... ok
+test_i07_no_sugiere_cerrar_grupo_inexistente (test_parser.PruebasParser.test_i07_no_sugiere_cerrar_grupo_inexistente) ... ok
+test_mensajes_legibles_y_orden_de_valores (test_parser.PruebasParser.test_mensajes_legibles_y_orden_de_valores) ... ok
 test_pila_no_depende_del_limite_de_recursion (test_parser.PruebasParser.test_pila_no_depende_del_limite_de_recursion) ... ok
 test_ubicacion_multilinea_y_numero_unicode (test_parser.PruebasParser.test_ubicacion_multilinea_y_numero_unicode) ... ok
 test_v01_regla_numerica (test_parser.PruebasParser.test_v01_regla_numerica) ... ok
@@ -18,6 +22,6 @@ test_v04_negacion_y_grupo (test_parser.PruebasParser.test_v04_negacion_y_grupo) 
 test_v05_anidamiento_y_varias_reglas (test_parser.PruebasParser.test_v05_anidamiento_y_varias_reglas) ... ok
 
 ----------------------------------------------------------------------
-Ran 18 tests in 0.079s
+Ran 22 tests in 0.056s
 
 OK
