@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><title>AgroReglas: casos L01 a L05</title>
+<style>
+body { margin: 0; font-family: system-ui, sans-serif; color: #182c26; }
+h1 { font-size: 22px; margin: 0 0 12px; }
+main { padding: 24px; background: #f4f7f5; }
+pre { padding: 18px; background: #152a23; color: #ebf3ef; border-radius: 8px;
+font: 13px/1.55 monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+p { font-size: 13px; }
+</style><main><h1>AgroReglas: casos L01 a L05</h1>
+<p>Salida real de Python.</p>
+<pre>L01: &#x27; \n\t&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró fin de entrada.
+
+L02: &#x27;when Humedad &lt; 30 then Abrir Valvula;&#x27;
+ACEPTADO. 1 regla en el AST.
+
+L03: &#x27;WHEN NOT NOT NOT ((((nivel == 0)))) THEN apagar bomba;&#x27;
+ACEPTADO. 1 regla en el AST.
+
+L04: &#x27;WHEN WHEN_sensor &gt;= 007 AND not_listo == 0 THEN abrir valvula;&#x27;
+ACEPTADO. 1 regla en el AST.
+
+L05: &#x27;WHEN humedad &lt; 3.5 THEN abrir valvula;&#x27;
+RECHAZADO. Error léxico en línea 1, columna 17 (desplazamiento 16): símbolo no reconocido &#x27;.&#x27;.
+</pre></main></html>

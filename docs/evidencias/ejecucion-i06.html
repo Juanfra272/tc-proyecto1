@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><title>AgroReglas: casos I06 a I10</title>
+<style>
+body { margin: 0; font-family: system-ui, sans-serif; color: #182c26; }
+h1 { font-size: 22px; margin: 0 0 12px; }
+main { padding: 24px; background: #f4f7f5; }
+pre { padding: 18px; background: #152a23; color: #ebf3ef; border-radius: 8px;
+font: 13px/1.55 monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+p { font-size: 13px; }
+</style><main><h1>AgroReglas: casos I06 a I10</h1>
+<p>Salida real de Python.</p>
+<pre>I06: &#x27;WHEN humedad 30 THEN abrir valvula;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba un operador relacional (&gt;, &lt;, &gt;=, &lt;=, ==, !=); se encontró &#x27;30&#x27;.
+
+I07: &#x27;WHEN humedad &lt; 30 abrir valvula;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba THEN, AND o OR; se encontró &#x27;abrir&#x27;.
+
+I08: &#x27;WHEN humedad &lt; 30 THEN abrir;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró &#x27;;&#x27;.
+
+I09: &#x27;humedad &lt; 30 THEN abrir valvula;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró &#x27;humedad&#x27;.
+
+I10: &#x27;WHEN humedad &lt; 30) THEN abrir valvula;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 18 (desplazamiento 17): se esperaba THEN; se encontró &#x27;)&#x27;.
+</pre></main></html>

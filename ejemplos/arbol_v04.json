@@ -26,7 +26,7 @@
               "operador": ">",
               "valor": {
                 "tipo": "Numero",
-                "valor": 60
+                "valor": "60"
               }
             }
           }
@@ -37,7 +37,7 @@
           "operador": "!=",
           "valor": {
             "tipo": "Numero",
-            "valor": 0
+            "valor": "0"
           }
         }
       },

@@ -1,0 +1,48 @@
+{
+  "tipo": "Programa",
+  "reglas": [
+    {
+      "tipo": "Regla",
+      "condicion": {
+        "tipo": "Logica",
+        "operador": "OR",
+        "izquierda": {
+          "tipo": "Logica",
+          "operador": "AND",
+          "izquierda": {
+            "tipo": "Comparacion",
+            "identificador": "temperatura",
+            "operador": ">=",
+            "valor": {
+              "tipo": "Numero",
+              "valor": "28"
+            }
+          },
+          "derecha": {
+            "tipo": "Comparacion",
+            "identificador": "humedad",
+            "operador": "<=",
+            "valor": {
+              "tipo": "Numero",
+              "valor": "40"
+            }
+          }
+        },
+        "derecha": {
+          "tipo": "Comparacion",
+          "identificador": "emergencia",
+          "operador": "==",
+          "valor": {
+            "tipo": "Booleano",
+            "valor": true
+          }
+        }
+      },
+      "accion": {
+        "tipo": "Accion",
+        "verbo": "activar",
+        "destino": "alarma"
+      }
+    }
+  ]
+}

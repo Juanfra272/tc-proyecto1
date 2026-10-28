@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es"><meta charset="utf-8"><title>AgroReglas: casos I01 a I05</title>
+<style>
+body { margin: 0; font-family: system-ui, sans-serif; color: #182c26; }
+h1 { font-size: 22px; margin: 0 0 12px; }
+main { padding: 24px; background: #f4f7f5; }
+pre { padding: 18px; background: #152a23; color: #ebf3ef; border-radius: 8px;
+font: 13px/1.55 monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+p { font-size: 13px; }
+</style><main><h1>AgroReglas: casos I01 a I05</h1>
+<p>Salida real de Python.</p>
+<pre>I01: &#x27;WHEN humedad &lt; THEN abrir valvula;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba un número, TRUE o FALSE; se encontró &#x27;THEN&#x27;.
+
+I02: &#x27;WHEN humedad &lt; 30 AND THEN abrir valvula;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, &#x27;(&#x27; o NOT; se encontró &#x27;THEN&#x27;.
+
+I03: &#x27;WHEN () THEN abrir valvula;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, &#x27;(&#x27; o NOT; se encontró &#x27;)&#x27;.
+
+I04: &#x27;WHEN (humedad &lt; 30 THEN abrir valvula;&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba &#x27;)&#x27; para cerrar el grupo; se encontró &#x27;THEN&#x27;.
+
+I05: &#x27;WHEN humedad &lt; 30 THEN abrir valvula&#x27;
+RECHAZADO. Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba &#x27;;&#x27; al final de la regla; se encontró fin de entrada.
+</pre></main></html>

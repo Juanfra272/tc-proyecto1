@@ -15,13 +15,13 @@ V05: 'WHEN NOT NOT (humedad < 30 AND (lluvia == FALSE OR reserva > 0)) THEN abri
 ACEPTADO. 2 reglas en el AST.
 
 I01: 'WHEN humedad < THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba un número, TRUE, FALSE; se encontró 'THEN'.
+RECHAZADO. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba un número, TRUE o FALSE; se encontró 'THEN'.
 
 I02: 'WHEN humedad < 30 AND THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, '(', NOT; se encontró 'THEN'.
+RECHAZADO. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, '(' o NOT; se encontró 'THEN'.
 
 I03: 'WHEN () THEN abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, '(', NOT; se encontró ')'.
+RECHAZADO. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, '(' o NOT; se encontró ')'.
 
 I04: 'WHEN (humedad < 30 THEN abrir valvula;'
 RECHAZADO. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba ')' para cerrar el grupo; se encontró 'THEN'.
@@ -48,7 +48,7 @@ I06: 'WHEN humedad 30 THEN abrir valvula;'
 RECHAZADO. Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba un operador relacional (>, <, >=, <=, ==, !=); se encontró '30'.
 
 I07: 'WHEN humedad < 30 abrir valvula;'
-RECHAZADO. Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba THEN, AND, OR; se encontró 'abrir'.
+RECHAZADO. Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba THEN, AND o OR; se encontró 'abrir'.
 
 I08: 'WHEN humedad < 30 THEN abrir;'
 RECHAZADO. Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró ';'.
@@ -103,7 +103,7 @@ AST del caso V04:
               "operador": ">",
               "valor": {
                 "tipo": "Numero",
-                "valor": 60
+                "valor": "60"
               }
             }
           }
@@ -114,7 +114,7 @@ AST del caso V04:
           "operador": "!=",
           "valor": {
             "tipo": "Numero",
-            "valor": 0
+            "valor": "0"
           }
         }
       },

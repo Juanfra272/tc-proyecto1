@@ -1,0 +1,13 @@
+WHEN temperatura >= 28 AND humedad <= 40 OR emergencia == TRUE THEN activar alarma;
+
+Programa
+  Regla
+    OR
+      AND
+        Comparacion temperatura >=
+          Numero 28
+        Comparacion humedad <=
+          Numero 40
+      Comparacion emergencia ==
+        Booleano TRUE
+    Accion activar alarma

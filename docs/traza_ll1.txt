@@ -1,0 +1,55 @@
+Traza del análisis LL(1)
+
+Generado por `python -m herramientas.evidencia_parser` con el mismo parser que analiza los casos. La pila se escribe con la cima a la derecha. La entrada muestra los lexemas pendientes; la tabla se consulta con su tipo de token. Cuando la cima es un no terminal A y el token es de tipo t, la acción indica la producción M[A, t]; cuando es un terminal, indica si coincide con el token. Las marcas de reducción que construyen el AST no se muestran, porque no son símbolos de la gramática.
+
+Traza de V01
+
+Entrada: `WHEN humedad < 30 THEN abrir valvula;`. La regla mínima recorre todas las filas que necesita una comparación numérica. Las colas ColaAND y ColaOR derivan ε ante THEN, y Resto deriva ε ante el fin de entrada.
+
+| Paso | Pila | Entrada | Acción |
+| --- | --- | --- | --- |
+| 1 | `$ Programa` | `WHEN humedad < 30 THEN abrir valvula ; $` | 1: Programa → Regla Resto |
+| 2 | `$ Resto Regla` | `WHEN humedad < 30 THEN abrir valvula ; $` | 4: Regla → WHEN Expr THEN Accion PUNTO_COMA |
+| 3 | `$ Resto PUNTO_COMA Accion THEN Expr WHEN` | `WHEN humedad < 30 THEN abrir valvula ; $` | coincide WHEN |
+| 4 | `$ Resto PUNTO_COMA Accion THEN Expr` | `humedad < 30 THEN abrir valvula ; $` | 5: Expr → Termino ColaOR |
+| 5 | `$ Resto PUNTO_COMA Accion THEN ColaOR Termino` | `humedad < 30 THEN abrir valvula ; $` | 8: Termino → Unaria ColaAND |
+| 6 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND Unaria` | `humedad < 30 THEN abrir valvula ; $` | 13: Unaria → Comparacion |
+| 7 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND Comparacion` | `humedad < 30 THEN abrir valvula ; $` | 14: Comparacion → ID OP_REL Valor |
+| 8 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND Valor OP_REL ID` | `humedad < 30 THEN abrir valvula ; $` | coincide ID |
+| 9 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND Valor OP_REL` | `< 30 THEN abrir valvula ; $` | coincide OP_REL |
+| 10 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND Valor` | `30 THEN abrir valvula ; $` | 15: Valor → NUM |
+| 11 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND NUM` | `30 THEN abrir valvula ; $` | coincide NUM |
+| 12 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND` | `THEN abrir valvula ; $` | 10: ColaAND → ε |
+| 13 | `$ Resto PUNTO_COMA Accion THEN ColaOR` | `THEN abrir valvula ; $` | 7: ColaOR → ε |
+| 14 | `$ Resto PUNTO_COMA Accion THEN` | `THEN abrir valvula ; $` | coincide THEN |
+| 15 | `$ Resto PUNTO_COMA Accion` | `abrir valvula ; $` | 18: Accion → ID ID |
+| 16 | `$ Resto PUNTO_COMA ID ID` | `abrir valvula ; $` | coincide ID |
+| 17 | `$ Resto PUNTO_COMA ID` | `valvula ; $` | coincide ID |
+| 18 | `$ Resto PUNTO_COMA` | `; $` | coincide PUNTO_COMA |
+| 19 | `$ Resto` | `$` | 3: Resto → ε |
+| 20 | `$` | `$` | aceptar |
+
+Traza de I04
+
+Entrada: `WHEN (humedad < 30 THEN abrir valvula;`. El grupo abierto apila PARENT_DER. Ante THEN, la tabla permite cerrar las colas internas con ε porque THEN pertenece a FOLLOW de ColaAND y ColaOR; el error aparece al cotejar el terminal PARENT_DER con THEN.
+
+| Paso | Pila | Entrada | Acción |
+| --- | --- | --- | --- |
+| 1 | `$ Programa` | `WHEN ( humedad < 30 THEN abrir valvula ; $` | 1: Programa → Regla Resto |
+| 2 | `$ Resto Regla` | `WHEN ( humedad < 30 THEN abrir valvula ; $` | 4: Regla → WHEN Expr THEN Accion PUNTO_COMA |
+| 3 | `$ Resto PUNTO_COMA Accion THEN Expr WHEN` | `WHEN ( humedad < 30 THEN abrir valvula ; $` | coincide WHEN |
+| 4 | `$ Resto PUNTO_COMA Accion THEN Expr` | `( humedad < 30 THEN abrir valvula ; $` | 5: Expr → Termino ColaOR |
+| 5 | `$ Resto PUNTO_COMA Accion THEN ColaOR Termino` | `( humedad < 30 THEN abrir valvula ; $` | 8: Termino → Unaria ColaAND |
+| 6 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND Unaria` | `( humedad < 30 THEN abrir valvula ; $` | 12: Unaria → PARENT_IZQ Expr PARENT_DER |
+| 7 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER Expr PARENT_IZQ` | `( humedad < 30 THEN abrir valvula ; $` | coincide PARENT_IZQ |
+| 8 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER Expr` | `humedad < 30 THEN abrir valvula ; $` | 5: Expr → Termino ColaOR |
+| 9 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR Termino` | `humedad < 30 THEN abrir valvula ; $` | 8: Termino → Unaria ColaAND |
+| 10 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR ColaAND Unaria` | `humedad < 30 THEN abrir valvula ; $` | 13: Unaria → Comparacion |
+| 11 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR ColaAND Comparacion` | `humedad < 30 THEN abrir valvula ; $` | 14: Comparacion → ID OP_REL Valor |
+| 12 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR ColaAND Valor OP_REL ID` | `humedad < 30 THEN abrir valvula ; $` | coincide ID |
+| 13 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR ColaAND Valor OP_REL` | `< 30 THEN abrir valvula ; $` | coincide OP_REL |
+| 14 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR ColaAND Valor` | `30 THEN abrir valvula ; $` | 15: Valor → NUM |
+| 15 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR ColaAND NUM` | `30 THEN abrir valvula ; $` | coincide NUM |
+| 16 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR ColaAND` | `THEN abrir valvula ; $` | 10: ColaAND → ε |
+| 17 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER ColaOR` | `THEN abrir valvula ; $` | 7: ColaOR → ε |
+| 18 | `$ Resto PUNTO_COMA Accion THEN ColaOR ColaAND PARENT_DER` | `THEN abrir valvula ; $` | error: se esperaba PARENT_DER |

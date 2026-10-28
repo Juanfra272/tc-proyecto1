@@ -1,6 +1,6 @@
 Resultados de los 25 casos de prueba
 
-Generado por python -m herramientas.evidencia_parser. Cada rechazo indica la línea y la columna del primer error. Todos son sintácticos salvo L05, que es léxico. Los mensajes completos están en docs/evidencias/ejecucion.txt.
+Generado por python -m herramientas.evidencia_parser. Cada rechazo indica la línea y la columna del primer error. Todos son sintácticos salvo L05, que es léxico. El mensaje completo de cada rechazo aparece en la tabla siguiente.
 
 | ID | Entrada | Esperado | Obtenido | Observación |
 | --- | --- | --- | --- | --- |
@@ -31,3 +31,22 @@ Generado por python -m herramientas.evidencia_parser. Cada rechazo indica la lí
 | L05 | `WHEN humedad < 3.5 THEN abrir valvula;` | rechazar | rechazar, 1:17 | Número decimal: el punto no pertenece al alfabeto |
 
 Coinciden 25 de 25 resultados con lo esperado.
+
+Mensajes de los rechazos
+
+Texto exacto que entrega el analizador en cada caso rechazado.
+
+| ID | Mensaje |
+| --- | --- |
+| I01 | Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba un número, TRUE o FALSE; se encontró 'THEN'. |
+| I02 | Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, '(' o NOT; se encontró 'THEN'. |
+| I03 | Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, '(' o NOT; se encontró ')'. |
+| I04 | Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba ')' para cerrar el grupo; se encontró 'THEN'. |
+| I05 | Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba ';' al final de la regla; se encontró fin de entrada. |
+| I06 | Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba un operador relacional (>, <, >=, <=, ==, !=); se encontró '30'. |
+| I07 | Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba THEN, AND o OR; se encontró 'abrir'. |
+| I08 | Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró ';'. |
+| I09 | Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró 'humedad'. |
+| I10 | Error sintáctico en línea 1, columna 18 (desplazamiento 17): se esperaba THEN; se encontró ')'. |
+| L01 | Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró fin de entrada. |
+| L05 | Error léxico en línea 1, columna 17 (desplazamiento 16): símbolo no reconocido '.'. |
