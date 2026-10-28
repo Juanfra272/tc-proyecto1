@@ -42,11 +42,11 @@ Los casos límite prueban los bordes del lenguaje: una entrada con solo espacios
 
     python -m unittest discover -s pruebas -v
 
-pruebas/test_casos.py recorre los 25 casos. En cada uno compara el resultado obtenido con el esperado y, si hay rechazo, compara la etapa, la ubicación, el token y los tipos esperados. En los diez casos de Fernando compara también los tokens del lexer con los publicados. Otras cinco pruebas ejecutan la línea de comandos con texto, con texto CRLF, con un archivo con BOM y CRLF que contiene un error en la segunda línea, con un error léxico y con un archivo inexistente. pruebas/test_parser.py conserva las pruebas de Juanfra que comparan el AST completo de V01 a V05.
+pruebas/test_casos.py recorre los 25 casos. En cada uno compara el resultado obtenido con el esperado y, si hay rechazo, compara la etapa, la ubicación, el token y los tipos esperados. En los diez casos de Fernando compara también los tokens del lexer con los publicados. Otras seis pruebas ejecutan la línea de comandos con texto, con texto CRLF, con texto con BOM inicial, con un archivo con BOM y CRLF que contiene un error en la segunda línea, con un error léxico y con un archivo inexistente. pruebas/test_parser.py conserva las pruebas de Juanfra que comparan el AST completo de V01 a V05.
 
 Para comprobar que las pruebas detectan fallos, se cambió una columna esperada en casos.json: la prueba falló en ese caso y volvió a pasar al restaurar el valor.
 
-Resultado obtenido: 18 métodos de prueba aprobados y 25 de 25 casos con el resultado esperado. La tabla completa con entrada, resultado esperado, resultado obtenido y observación está en docs/resultados_casos.txt.
+Resultado obtenido: 23 métodos de prueba aprobados y 25 de 25 casos con el resultado esperado. La tabla completa con entrada, resultado esperado, resultado obtenido y observación está en docs/resultados_casos.txt.
 
 5. Evidencia
 

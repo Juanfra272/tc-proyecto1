@@ -79,7 +79,7 @@ python -m unittest discover -s pruebas -v
 python herramientas/validar_gramatica.py
 ```
 
-La primera ejecuta 18 pruebas, entre ellas los 25 casos de `especificacion/casos.json`: 10 válidos, 10 inválidos y 5 casos límite. La segunda vuelve a calcular FIRST, FOLLOW y la tabla LL(1) y comprueba que coincidan con `docs/first_follow_tabla.txt`.
+La primera ejecuta 23 pruebas, entre ellas los 25 casos de `especificacion/casos.json`: 10 válidos, 10 inválidos y 5 casos límite. La segunda vuelve a calcular FIRST, FOLLOW y la tabla LL(1) y comprueba que coincidan con `docs/first_follow_tabla.txt`.
 
 Para regenerar la tabla de resultados, las salidas de ejemplo y las páginas de evidencia:
 

@@ -3,6 +3,7 @@ test_archivo_inexistente (test_casos.PruebasCLI.test_archivo_inexistente) ... ok
 test_eof_no_senala_linea_vacia_final (test_casos.PruebasCLI.test_eof_no_senala_linea_vacia_final) ... ok
 test_error_lexico_ubicado (test_casos.PruebasCLI.test_error_lexico_ubicado) ... ok
 test_texto_aceptado_muestra_arbol (test_casos.PruebasCLI.test_texto_aceptado_muestra_arbol) ... ok
+test_texto_con_bom_inicial (test_casos.PruebasCLI.test_texto_con_bom_inicial) ... ok
 test_texto_con_crlf (test_casos.PruebasCLI.test_texto_con_crlf) ... ok
 test_hay_25_casos_distintos (test_casos.PruebasCasos.test_hay_25_casos_distintos) ... ok
 test_resultado_y_error_de_cada_caso (test_casos.PruebasCasos.test_resultado_y_error_de_cada_caso) ... ok
@@ -22,6 +23,6 @@ test_v04_negacion_y_grupo (test_parser.PruebasParser.test_v04_negacion_y_grupo) 
 test_v05_anidamiento_y_varias_reglas (test_parser.PruebasParser.test_v05_anidamiento_y_varias_reglas) ... ok
 
 ----------------------------------------------------------------------
-Ran 22 tests in 0.056s
+Ran 23 tests in 0.058s
 
 OK
