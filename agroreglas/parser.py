@@ -37,7 +37,8 @@ class ErrorSintactico(ValueError):
             "PUNTO_COMA": "';' al final de la regla",
         }
         self.tokens_esperados = tuple(t for t in nombres if t in esperados)
-        esperado = ", ".join(nombres[t] for t in self.tokens_esperados)
+        textos = [nombres[t] for t in self.tokens_esperados]
+        esperado = textos[-1] if len(textos) == 1 else ", ".join(textos[:-1]) + " o " + textos[-1]
         super().__init__(
             f"Error sintáctico en línea {token.linea}, columna {token.columna} "
             f"(desplazamiento {token.desplazamiento}): se esperaba {esperado}; "
@@ -142,8 +143,11 @@ def _reducir(simbolo, hijos):
                 "operador": hijos[1].lexema, "valor": hijos[2]}
     if simbolo == "Valor":
         token = hijos[0]
-        return {"tipo": "Numero" if token.tipo == "NUM" else "Booleano",
-                "valor": int(token.lexema) if token.tipo == "NUM" else token.tipo == "TRUE"}
+        # El literal se conserva como texto: el AST es sintáctico y así no hereda
+        # el límite de dígitos que Python impone al convertir texto en entero.
+        if token.tipo == "NUM":
+            return {"tipo": "Numero", "valor": token.lexema}
+        return {"tipo": "Booleano", "valor": token.tipo == "TRUE"}
     if simbolo == "Accion":
         return {"tipo": "Accion", "verbo": hijos[0].lexema, "destino": hijos[1].lexema}
     raise ValueError(f"Sin acción semántica para {simbolo}.")

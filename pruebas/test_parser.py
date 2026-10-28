@@ -54,7 +54,7 @@ class PruebasParser(unittest.TestCase):
 
     def test_v01_regla_numerica(self):
         self.comprobar_valido("V01", programa(regla(
-            comparacion("humedad", "<", numero(30)), "abrir", "valvula")))
+            comparacion("humedad", "<", numero("30")), "abrir", "valvula")))
 
     def test_v02_booleano(self):
         self.comprobar_valido("V02", programa(regla(
@@ -62,32 +62,32 @@ class PruebasParser(unittest.TestCase):
 
     def test_v03_precedencia(self):
         self.comprobar_valido("V03", programa(regla(logica("OR",
-            logica("AND", comparacion("temperatura", ">=", numero(28)),
-                   comparacion("humedad", "<=", numero(40))),
+            logica("AND", comparacion("temperatura", ">=", numero("28")),
+                   comparacion("humedad", "<=", numero("40"))),
             comparacion("emergencia", "==", booleano(True))), "activar", "alarma")))
 
     def test_v04_negacion_y_grupo(self):
         self.comprobar_valido("V04", programa(regla(logica("AND",
             negacion(logica("OR", comparacion("lluvia", "==", booleano(True)),
-                            comparacion("humedad", ">", numero(60)))),
-            comparacion("nivel", "!=", numero(0))), "encender", "bomba")))
+                            comparacion("humedad", ">", numero("60")))),
+            comparacion("nivel", "!=", numero("0"))), "encender", "bomba")))
 
     def test_v05_anidamiento_y_varias_reglas(self):
         self.comprobar_valido("V05", programa(
             regla(negacion(negacion(logica("AND",
-                comparacion("humedad", "<", numero(30)),
+                comparacion("humedad", "<", numero("30")),
                 logica("OR", comparacion("lluvia", "==", booleano(False)),
-                       comparacion("reserva", ">", numero(0)))))), "abrir", "valvula"),
-            regla(comparacion("nivel", "==", numero(0)), "apagar", "bomba")))
+                       comparacion("reserva", ">", numero("0")))))), "abrir", "valvula"),
+            regla(comparacion("nivel", "==", numero("0")), "apagar", "bomba")))
 
     def test_asociacion_izquierda_para_ambos_conectores(self):
         for operador in ("AND", "OR"):
             with self.subTest(operador=operador):
                 fuente = f"WHEN a < 1 {operador} b < 2 {operador} c < 3 THEN abrir valvula;"
                 self.assertEqual(self.analizar(fuente), programa(regla(logica(operador,
-                    logica(operador, comparacion("a", "<", numero(1)),
-                           comparacion("b", "<", numero(2))),
-                    comparacion("c", "<", numero(3))), "abrir", "valvula")))
+                    logica(operador, comparacion("a", "<", numero("1")),
+                           comparacion("b", "<", numero("2"))),
+                    comparacion("c", "<", numero("3"))), "abrir", "valvula")))
 
     def test_ubicacion_multilinea_y_numero_unicode(self):
         fuente = "when humedad < ٣ THEN abrir valvula;\n\tWHEN nivel ==\n  THEN apagar bomba;"
@@ -116,7 +116,7 @@ class PruebasParser(unittest.TestCase):
     def test_mensajes_legibles_y_orden_de_valores(self):
         for fuente, esperado in (
             (CASOS["I06"]["entrada"], "un operador relacional"),
-            (CASOS["I01"]["entrada"], "un número, TRUE, FALSE"),
+            (CASOS["I01"]["entrada"], "un número, TRUE o FALSE"),
             (CASOS["V01"]["entrada"] + " extra", "fin de entrada"),
         ):
             with self.subTest(fuente=fuente):
@@ -145,8 +145,14 @@ class PruebasParser(unittest.TestCase):
     def test_pila_no_depende_del_limite_de_recursion(self):
         fuente = "WHEN " + "(" * 1100 + "nivel == 0" + ")" * 1100 + " THEN apagar bomba;"
         self.assertEqual(self.analizar(fuente), programa(regla(
-            comparacion("nivel", "==", numero(0)), "apagar", "bomba")))
+            comparacion("nivel", "==", numero("0")), "apagar", "bomba")))
         self.assertEqual(len(self.analizar(CASOS["V01"]["entrada"] * 1100)["reglas"]), 1100)
+
+    def test_numero_conserva_el_literal_sin_limite_de_digitos(self):
+        # Python no convierte a entero textos de más de 4300 dígitos; el AST no debe heredar ese límite.
+        literal = "0" + "9" * 5000
+        self.assertEqual(self.analizar(f"WHEN nivel > {literal} THEN abrir valvula;"), programa(regla(
+            comparacion("nivel", ">", numero(literal)), "abrir", "valvula")))
 
     def test_contrato_tokens_y_fuente(self):
         with self.assertRaisesRegex(ValueError, "no coinciden"):
