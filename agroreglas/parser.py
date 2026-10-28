@@ -153,11 +153,13 @@ def _reducir(simbolo, hijos):
     raise ValueError(f"Sin acción semántica para {simbolo}.")
 
 
-def analizar_tokens(tokens, fuente):
+def analizar_tokens(tokens, fuente, traza=None):
     """Devuelve un AST JSON o lanza ErrorSintactico en el primer fallo.
 
     tokens: iterable de pares (tipo, lexema), sin EOF.
     fuente: texto exacto que recibió el lexer, necesario para las ubicaciones.
+    traza: lista opcional que recibe (pila, entrada, acción) en cada paso del
+    reconocimiento; el informe la usa para mostrar la tabla en funcionamiento.
     No ejecuta acciones agrícolas ni verifica tipos o nombres del dominio.
     """
     entrada = _ubicar(tokens, fuente)
@@ -175,8 +177,15 @@ def analizar_tokens(tokens, fuente):
             valores.append(_reducir(nombre, hijos))
             continue
         actual = entrada[indice]
+        if traza is not None:
+            simbolos = [s for s in pila if not isinstance(s, tuple)] + [simbolo]
+            restante = [t.lexema or t.tipo for t in entrada[indice:]]
+            traza.append([" ".join(simbolos), " ".join(restante), ""])
         if simbolo in _GRAMATICA["producciones"]:
             numero = _TABLA.get((simbolo, actual.tipo))
+            if traza is not None:
+                traza[-1][2] = (f"error: M[{simbolo}, {actual.tipo}] vacía" if numero is None else
+                                f"{numero}: {simbolo} → " + (" ".join(_REGLAS[numero][1]) or "ε"))
             if numero is None:
                 esperados = _ESPERADOS[simbolo]
                 # FOLLOW reúne todos los contextos; aquí solo se cierran grupos abiertos.
@@ -187,6 +196,10 @@ def analizar_tokens(tokens, fuente):
             pila.append((simbolo, len(rhs)))
             pila.extend(reversed(rhs))
         else:
+            if traza is not None:
+                traza[-1][2] = ("aceptar" if simbolo == "$" == actual.tipo else
+                                f"coincide {simbolo}" if actual.tipo == simbolo else
+                                f"error: se esperaba {simbolo}")
             if actual.tipo != simbolo:
                 raise ErrorSintactico(actual, simbolo, {simbolo})
             if simbolo != "$":
