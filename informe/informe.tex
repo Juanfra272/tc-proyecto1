@@ -88,28 +88,46 @@ El código fuente, la especificación, las pruebas, el README y este informe est
 
 Las capturas muestran páginas generadas por \texttt{python -m herramientas.evidencia\_parser} con la salida real de Python.
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/cli.png}
+  \includegraphics[width=0.8\textwidth]{../docs/evidencias/cli.png}
   \caption{Ejecución desde archivo y desde texto: un programa aceptado con su AST, un error sintáctico en la tercera línea y un error léxico.}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[!htbp]
   \centering
   \includegraphics[width=\textwidth]{../docs/evidencias/arbol.png}
   \caption{AST del caso V04, con la negación sobre el grupo y el AND como raíz de la condición.}
 \end{figure}
 
-\begin{figure}[p]
+\begin{figure}[!htbp]
   \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion.png}
-  \caption{Decisión del analizador en los diez casos de Fernando, con el mensaje completo de cada rechazo.}
+  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-v01.png}
+  \caption{Casos válidos V01 a V05: los cinco se aceptan.}
 \end{figure}
 
-\begin{figure}[p]
+\begin{figure}[!htbp]
   \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-nuevos.png}
-  \caption{Decisión del analizador en los quince casos nuevos, incluidos los cinco casos límite.}
+  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-i01.png}
+  \caption{Casos inválidos I01 a I05, con el mensaje completo de cada rechazo.}
+\end{figure}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-v06.png}
+  \caption{Casos válidos V06 a V10: los cinco se aceptan.}
+\end{figure}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-i06.png}
+  \caption{Casos inválidos I06 a I10, con el mensaje completo de cada rechazo.}
+\end{figure}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-l01.png}
+  \caption{Casos límite L01 a L05: se aceptan L02, L03 y L04, y se rechazan L01 y L05.}
 \end{figure}
 
 \end{document}

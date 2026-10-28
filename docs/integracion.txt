@@ -22,9 +22,9 @@ Si el programa es válido, se imprime ACEPTADO, la cantidad de reglas y el AST c
 
 3. Casos de prueba
 
-especificacion/casos.json reúne 25 entradas distintas: los diez casos de Fernando (V01 a V05 e I01 a I05), cinco válidos nuevos (V06 a V10), cinco inválidos nuevos (I06 a I10) y cinco casos límite (L01 a L05). Cada caso declara su resultado esperado. Cada rechazo declara además la etapa del error, su ubicación, el token encontrado y, si es sintáctico, el símbolo pendiente y los tipos esperados. Estos datos se escribieron a partir de la gramática y de la tabla LL(1), antes de ejecutar el parser.
+especificacion/casos.json reúne 25 entradas distintas: los diez casos de la definición formal (V01 a V05 e I01 a I05), cinco válidos nuevos (V06 a V10), cinco inválidos nuevos (I06 a I10) y cinco casos límite (L01 a L05). Cada caso declara su resultado esperado. Cada rechazo declara además la etapa del error, su ubicación, el token encontrado y, si es sintáctico, el símbolo pendiente y los tipos esperados. Estos datos se escribieron a partir de la gramática y de la tabla LL(1), antes de ejecutar el parser.
 
-Los válidos nuevos cubren lo que V01 a V05 no prueban: cadenas de tres AND, cadenas de tres OR, NOT sin paréntesis seguido de AND, dos grupos en una condición y un programa de tres reglas en líneas distintas. V08 confirma que NOT humedad == TRUE AND ... niega solo la primera comparación, como establece la precedencia de la sección 4.3 de Fernando.
+Los válidos nuevos cubren lo que V01 a V05 no prueban: cadenas de tres AND, cadenas de tres OR, NOT sin paréntesis seguido de AND, dos grupos en una condición y un programa de tres reglas en líneas distintas. V08 confirma que NOT humedad == TRUE AND ... niega solo la primera comparación, como establece la precedencia de la sección 4.3.
 
 Los inválidos nuevos fallan en filas o terminales distintos de los de I01 a I05:
 
@@ -36,20 +36,20 @@ Los inválidos nuevos fallan en filas o terminales distintos de los de I01 a I05
 | I09 | La regla no empieza con WHEN | Programa |
 | I10 | Paréntesis de cierre sin apertura | THEN |
 
-Los casos límite prueban los bordes del lenguaje: una entrada con solo espacios (L01), palabras reservadas en minúsculas (L02), negación triple con paréntesis redundantes (L03), identificadores que empiezan con WHEN o NOT y números con ceros a la izquierda (L04), y un número decimal que el lexer rechaza en el punto (L05). Las pruebas de Juanfra completan estos casos con 1100 paréntesis anidados, 1100 reglas, texto sobrante después de una regla y errores en varias líneas.
+Los casos límite prueban los bordes del lenguaje: una entrada con solo espacios (L01), palabras reservadas en minúsculas (L02), negación triple con paréntesis redundantes (L03), identificadores que empiezan con WHEN o NOT y números con ceros a la izquierda (L04), y un número decimal que el lexer rechaza en el punto (L05). Las pruebas de pruebas/test_parser.py completan estos casos con 1100 paréntesis anidados, 1100 reglas, texto sobrante después de una regla y errores en varias líneas.
 
 4. Automatización y resultados
 
     python -m unittest discover -s pruebas -v
 
-pruebas/test_casos.py recorre los 25 casos. En cada uno compara el resultado obtenido con el esperado y, si hay rechazo, compara la etapa, la ubicación, el token y los tipos esperados. En los diez casos de Fernando compara también los tokens del lexer con los publicados. Otras seis pruebas ejecutan la línea de comandos con texto, con texto CRLF, con texto con BOM inicial, con un archivo con BOM y CRLF que contiene un error en la segunda línea, con un error léxico y con un archivo inexistente. pruebas/test_parser.py conserva las pruebas de Juanfra que comparan el AST completo de V01 a V05.
+pruebas/test_casos.py recorre los 25 casos. En cada uno compara el resultado obtenido con el esperado y, si hay rechazo, compara la etapa, la ubicación, el token y los tipos esperados. En V01 a V05 e I01 a I05 compara también los tokens del lexer con los publicados. Otras siete pruebas ejecutan la línea de comandos con texto, con texto CRLF, con texto con BOM inicial, con un archivo con BOM y CRLF que contiene un error en la segunda línea, con un error léxico, con un archivo inexistente y con espacios o líneas vacías después de una regla incompleta, para comprobar que el ^ señala la última línea con texto. pruebas/test_parser.py reúne las pruebas que comparan el AST completo de V01 a V05.
 
 Para comprobar que las pruebas detectan fallos, se cambió una columna esperada en casos.json: la prueba falló en ese caso y volvió a pasar al restaurar el valor.
 
-Resultado obtenido: 23 métodos de prueba aprobados y 25 de 25 casos con el resultado esperado. La tabla completa con entrada, resultado esperado, resultado obtenido y observación está en docs/resultados_casos.txt.
+Resultado obtenido: 24 métodos de prueba aprobados y 25 de 25 casos con el resultado esperado. La tabla completa con entrada, resultado esperado, resultado obtenido y observación está en la sección siguiente, junto con el mensaje de cada rechazo, y en docs/resultados_casos.txt.
 
 5. Evidencia
 
     python -m herramientas.evidencia_parser
 
-El comando ejecuta los 25 casos y la suite, y se detiene si alguna prueba falla. Regenera docs/resultados_casos.txt, las salidas de texto y las páginas HTML de docs/evidencias, incluida cli.html con la ejecución desde archivo y desde texto. La salida de los 25 casos se divide en ejecucion.html y ejecucion-nuevos.html para que cada captura sea legible. Las capturas PNG se toman de esas páginas, por lo que muestran la salida real de Python.
+El comando ejecuta los 25 casos y la suite, y se detiene si alguna prueba falla. Regenera docs/resultados_casos.txt, las salidas de texto y las páginas HTML de docs/evidencias, incluida cli.html con la ejecución desde archivo y desde texto. La salida de los 25 casos se divide en cinco páginas de cinco casos, de ejecucion-v01.html a ejecucion-l01.html, para que cada captura sea legible. Las capturas PNG se toman de esas páginas, por lo que muestran la salida real de Python.

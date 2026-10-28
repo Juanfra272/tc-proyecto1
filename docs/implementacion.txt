@@ -15,7 +15,7 @@ analizar_programa(fuente) aplica el lexer y el parser en un solo paso. La ejecuc
 
 2. Relación con la gramática y la tabla LL(1)
 
-parser.py lee especificacion/gramatica.json y utiliza el cálculo estático analizar de herramientas/validar_gramatica.py para obtener la tabla documentada por Fernando. Esta función calcula FIRST, FOLLOW y SELECT; no reconoce el programa ni genera el código del parser. El reconocimiento y las acciones semánticas están escritos en agroreglas/parser.py. La carga rechaza una gramática con conflictos LL(1) o recursión izquierda.
+parser.py lee especificacion/gramatica.json y utiliza el cálculo estático analizar de herramientas/validar_gramatica.py para obtener la tabla documentada en la sección 6. Esta función calcula FIRST, FOLLOW y SELECT; no reconoce el programa ni genera el código del parser. El reconocimiento y las acciones semánticas están escritos en agroreglas/parser.py. La carga rechaza una gramática con conflictos LL(1) o recursión izquierda.
 
 La pila comienza con $ y Programa, con Programa en la cima. En cada paso se consulta el tipo del token actual:
 
@@ -28,7 +28,7 @@ Solo se acepta después de reconocer Programa y cotejar $ con el fin real de los
 
 Cada expansión deja además una marca de reducción con el nombre del no terminal y su cantidad de hijos. Una segunda pila almacena tokens reconocidos y valores semánticos. Al alcanzar una marca, se retiran sus hijos, se aplica _reducir y se apila el resultado. El mismo recorrido reconoce la entrada y construye el AST.
 
-Las pilas son listas de Python; el reconocimiento no usa recursión de funciones. Resto y las colas lógicas se representan temporalmente con pares enlazados para evitar copiar listas de tamaño creciente. El reconocimiento es lineal en el número de tokens para esta gramática fija, sin contar el coste de convertir los números; el almacenamiento es lineal en el tamaño de la entrada y del AST.
+Las pilas son listas de Python; el reconocimiento no usa recursión de funciones. Resto y las colas lógicas se representan temporalmente con pares enlazados para evitar copiar listas de tamaño creciente. El reconocimiento es lineal en el número de tokens para esta gramática fija; el almacenamiento es lineal en el tamaño de la entrada y del AST.
 
 3. Construcción y significado del AST
 
@@ -37,17 +37,17 @@ La representación utiliza estos nodos:
 - Programa: lista ordenada de reglas.
 - Regla: condicion y accion.
 - Comparacion: identificador, operador relacional concreto y valor.
-- Numero: valor entero de Python.
+- Numero: literal decimal tal como se escribió, como texto.
 - Booleano: valor True o False de Python, presentado como TRUE o FALSE en el árbol.
 - Logica: operador AND u OR, izquierda y derecha.
 - Negacion: operando de NOT.
 - Accion: verbo y destino conservados como identificadores.
 
-Las producciones 1 a 3 reúnen las reglas; la 4 crea Regla. Las producciones 5 a 10 acumulan las operaciones lógicas. Las 11 a 13 implementan negación, agrupación y comparación. La 14 crea Comparacion; las 15 a 17 convierten el valor; la 18 crea Accion.
+Las producciones 1 a 3 reúnen las reglas; la 4 crea Regla. Las producciones 5 a 10 acumulan las operaciones lógicas. Las 11 a 13 implementan negación, agrupación y comparación. La 14 crea Comparacion; las 15 a 17 crean el valor; la 18 crea Accion. El número se guarda como texto porque el AST es sintáctico: así conserva los ceros a la izquierda y no hereda el límite de 4300 dígitos que Python impone al convertir texto en entero. Interpretarlo corresponde a una etapa semántica.
 
 Termino procesa AND dentro de Expr, de modo que AND tiene mayor prioridad que OR. Cada cola se recorre de izquierda a derecha para producir asociación izquierda, aunque la gramática esté escrita con recursión derecha. Unaria construye NOT sobre su operando completo y permite negaciones repetidas. Los paréntesis devuelven el AST de la expresión interior; se omiten como nodos porque la agrupación ya queda expresada en las relaciones entre hijos.
 
-Por ejemplo, V04 produce AND(NOT(OR(lluvia == TRUE, humedad > 60)), nivel != 0), seguido por la acción encender bomba. El AST completo está en ejemplos/arbol_v04.json. Su versión jerárquica está en ejemplos/arbol_v04.txt y puede regenerarse con formatear_arbol de agroreglas/arbol.py. Esta presentación también usa una pila para recorrer el árbol.
+V03 muestra la precedencia sin paréntesis: temperatura >= 28 AND humedad <= 40 OR emergencia == TRUE produce OR(AND(temperatura >= 28, humedad <= 40), emergencia == TRUE), con OR en la raíz porque AND se agrupa primero. V04 produce AND(NOT(OR(lluvia == TRUE, humedad > 60)), nivel != 0), seguido por la acción encender bomba. Los AST completos están en ejemplos/arbol_v03.json y ejemplos/arbol_v04.json. Sus versiones jerárquicas, que se reproducen a continuación, están en los archivos .txt equivalentes y pueden regenerarse con formatear_arbol de agroreglas/arbol.py. Esta presentación también usa una pila para recorrer el árbol.
 
 El parser comprueba sintaxis. No evalúa condiciones, no ejecuta acciones ni valida la existencia de sensores o dispositivos. Tampoco realiza comprobación semántica de tipos.
 
@@ -57,7 +57,7 @@ El lexer devuelve pares sin posiciones. _ubicar recorre el texto original en ord
 
 El desplazamiento cuenta caracteres Unicode desde cero. Línea y columna parten de uno. Un tabulador cuenta como un carácter, no como varias columnas visuales. EOF se ubica inmediatamente después del último token, sin contar los espacios finales. Una entrada sin tokens se ubica en línea 1, columna 1. El contrato léxico no admite CR; la lectura de archivos lo convierte en LF, como se describe en la sección de integración.
 
-ErrorSintactico conserva el token, el símbolo pendiente y los tipos esperados. como_dict devuelve estos datos para automatizar las comprobaciones. El mensaje incluye causa, lexema encontrado, línea, columna y desplazamiento. Para una fila vacía de la tabla, los tipos esperados son sus columnas ocupadas; para un terminal obligatorio, se informa ese terminal. Se descarta el cierre de grupo entre las alternativas cuando no hay un paréntesis abierto. Los tipos se presentan en un orden explícito: número, TRUE y FALSE para valores. El mensaje traduce los tipos internos a nombres legibles y reserva el símbolo pendiente para como_dict. Por ejemplo, la falta de ; en I05 se informa en línea 1, columna 37, ante fin de entrada. Los cinco errores de Fernando coinciden exactamente con las posiciones y símbolos de especificacion/casos.json.
+ErrorSintactico conserva el token, el símbolo pendiente y los tipos esperados. como_dict devuelve estos datos para automatizar las comprobaciones. El mensaje incluye causa, lexema encontrado, línea, columna y desplazamiento. Para una fila vacía de la tabla, los tipos esperados son sus columnas ocupadas; para un terminal obligatorio, se informa ese terminal. Se descarta el cierre de grupo entre las alternativas cuando no hay un paréntesis abierto. Los tipos se presentan en un orden explícito: número, TRUE y FALSE para valores. El mensaje traduce los tipos internos a nombres legibles y reserva el símbolo pendiente para como_dict. Por ejemplo, la falta de ; en I05 se informa en línea 1, columna 37, ante fin de entrada. Los cinco errores I01 a I05 coinciden exactamente con las posiciones y símbolos de especificacion/casos.json.
 
 Los caracteres desconocidos son errores léxicos. El módulo del lexer los informa con ErrorLexico, una subclase de ValueError ubicada con el mismo criterio.
 
@@ -72,9 +72,9 @@ Las cinco pruebas V01 a V05 comparan el AST completo con estructuras esperadas c
 
 V01 verifica la regla numérica; V02, FALSE; V03, AND antes de OR y TRUE; V04, NOT sobre un grupo y su combinación con AND; V05, negación repetida, paréntesis anidados y dos reglas en orden.
 
-La suite también comprueba asociación izquierda de ambos conectores, errores en varias líneas con dígitos Unicode, entrada vacía, texto sobrante, EOF tras espacios y desacuerdos entre tokens y fuente. Una prueba acotada comprueba 1100 grupos y 1100 reglas para verificar que el parser no depende del límite de recursión de Python.
+La suite también comprueba asociación izquierda de ambos conectores, errores en varias líneas con dígitos Unicode, entrada vacía, texto sobrante, EOF tras espacios y desacuerdos entre tokens y fuente. Una prueba acotada comprueba 1100 grupos y 1100 reglas para verificar que el parser no depende del límite de recursión de Python. Otra acepta un número de 5001 dígitos y comprueba que el AST conserva el literal completo.
 
-Los cinco casos inválidos de Fernando se comprueban junto con los 25 casos en pruebas/test_casos.py, descrito en la sección de integración. La verificación estática obtiene 18 producciones, 25 celdas ocupadas y cero conflictos LL(1).
+Los cinco casos inválidos I01 a I05 se comprueban junto con los 25 casos en pruebas/test_casos.py, descrito en la sección de integración. La verificación estática obtiene 18 producciones, 25 celdas ocupadas y cero conflictos LL(1).
 
 6. Evidencia reproducible
 
@@ -82,10 +82,10 @@ Para regenerar las salidas, el AST y las páginas de evidencia:
 
     python -m herramientas.evidencia_parser
 
-Este comando ejecuta los 25 casos y la suite, y falla si esta última no pasa. Guarda en docs/evidencias las salidas de texto y las páginas HTML de la ejecución, del árbol y de la línea de comandos, junto con la tabla docs/resultados_casos.txt y los dos archivos del árbol en ejemplos.
+Este comando ejecuta los 25 casos y la suite, y falla si esta última no pasa. Guarda en docs/evidencias las salidas de texto y las páginas HTML de la ejecución, del árbol y de la línea de comandos, junto con la tabla docs/resultados_casos.txt, la traza docs/traza_ll1.txt y los árboles de V03 y V04 en ejemplos.
 
 Las capturas PNG de docs/evidencias muestran esas páginas HTML con salida real de Python. Las páginas se generan escapando la salida, sin modificar los resultados.
 
 7. Límites prácticos
 
-La profundidad del reconocimiento no depende de la pila de llamadas de Python. Las restricciones prácticas son la memoria disponible y las conversiones o serializadores de Python: por ejemplo, la conversión de enteros decimales extremadamente largos puede estar limitada por la configuración del intérprete, y json.dumps puede alcanzar su límite de recursión al exportar un AST con muchísimas negaciones. La presentación jerárquica usa recorrido iterativo. No se cambia la configuración global del intérprete.
+La profundidad del reconocimiento no depende de la pila de llamadas de Python. Las restricciones prácticas son la memoria disponible y los serializadores de Python: por ejemplo, json.dumps puede alcanzar su límite de recursión al exportar un AST con muchísimas negaciones. La presentación jerárquica usa recorrido iterativo. No se cambia la configuración global del intérprete.

@@ -135,10 +135,17 @@ def main():
     (GENERADO / "teoria.tex").write_text(teoria, encoding="utf-8")
 
     implementacion, final = convertir(docs / "implementacion.txt", desplazamiento=ultimo)
-    # El árbol de V04 ilustra la sección 3 de Juanfra, sobre el AST.
-    arbol = (RAIZ / "ejemplos/arbol_v04.txt").read_text(encoding="utf-8").rstrip("\n").split("\n")
-    figura = ("AST del caso V04 producido por " + tt("formatear_arbol") + ":\n\n" + literal(arbol))
-    implementacion = insertar_antes(implementacion, ultimo + 4, figura)
+    # La traza generada cierra la sección 2 de Juanfra, sobre la relación con la tabla LL(1).
+    traza, _ = convertir(docs / "traza_ll1.txt", nivel="subsubsection")
+    titulo = "Traza del análisis LL(1)"
+    implementacion = insertar_antes(implementacion, ultimo + 3,
+                                    f"\\subsection*{{{titulo}}}\n\\addcontentsline{{toc}}{{subsection}}{{{titulo}}}\n\n" + traza)
+    # Los árboles de V03 y V04 ilustran la sección 3 de Juanfra, sobre el AST.
+    figuras = []
+    for caso in ("V03", "V04"):
+        arbol = (RAIZ / f"ejemplos/arbol_{caso.lower()}.txt").read_text(encoding="utf-8").rstrip("\n").split("\n")
+        figuras.append(f"AST del caso {caso} producido por " + tt("formatear_arbol") + ":\n\n" + literal(arbol))
+    implementacion = insertar_antes(implementacion, ultimo + 4, "\n\n".join(figuras))
     (GENERADO / "implementacion.tex").write_text(implementacion, encoding="utf-8")
 
     integracion, final = convertir(docs / "integracion.txt", desplazamiento=final)

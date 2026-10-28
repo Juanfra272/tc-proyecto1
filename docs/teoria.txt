@@ -28,7 +28,7 @@ El alfabeto relevante incluye letras ASCII, guion bajo, dígitos decimales, los 
 
 Las palabras reservadas se reconocen después de consumir el identificador completo. when produce el tipo WHEN, pero WHEN_sensor sigue siendo ID. El lexer conserva la escritura original del lexema. Los nombres se conservan tal como se escriben; no se define equivalencia semántica entre sensor y Sensor.
 
-Se reconocen primero los operadores relacionales de dos caracteres. Un carácter ajeno a las categorías produce ValueError. No hay comentarios, cadenas, números negativos, decimales ni separadores de acciones. El carácter CR \r no se descarta en el lexer actual. La CLI normaliza CRLF y CR a LF antes del análisis, como se documenta en la sección de integración; esta especificación no cambia el notebook.
+Se reconocen primero los operadores relacionales de dos caracteres. Un carácter ajeno a las categorías produce ValueError. No hay comentarios, cadenas, números negativos, decimales ni separadores de acciones. La ausencia de negativos y decimales proviene del patrón NUM del lexer entregado, que el proyecto conserva sin cambios; por eso las reglas usan magnitudes enteras y no pueden expresar, por ejemplo, un pH de 6,5 o una temperatura bajo cero. Admitirlos solo exige ampliar ese patrón, por ejemplo a -?\d+(\.\d+)?. La gramática no cambia, porque Valor → NUM no depende de la forma del número, y FIRST, FOLLOW y la tabla LL(1) quedan iguales. El carácter CR \r no se descarta en el lexer actual. La CLI normaliza CRLF y CR a LF antes del análisis, como se documenta en la sección de integración; esta especificación no cambia el notebook.
 
 El marcador $ representa fin de entrada y debe añadirlo el parser después de los tokens. No es un carácter aceptado por el lexer. ε representa la cadena vacía y tampoco es un token.
 
@@ -143,6 +143,22 @@ FOLLOW(A) contiene los terminales que pueden aparecer inmediatamente después de
 Por ejemplo, FIRST(Unaria) = {NOT, PARENT_IZQ, ID} por sus tres alternativas. FIRST(ColaAND) = {AND, ε}, mientras que FIRST(Resto) = {WHEN, ε}. Como Termino no es anulable, FIRST(Expr) = FIRST(Termino) = FIRST(Unaria).
 
 De Regla → WHEN Expr THEN Accion PUNTO_COMA se obtiene THEN ∈ FOLLOW(Expr) y PUNTO_COMA ∈ FOLLOW(Accion). De la agrupación se obtiene PARENT_DER ∈ FOLLOW(Expr). Por tanto, FOLLOW(Expr) = {THEN, PARENT_DER}. Como ColaOR termina la producción de Expr, hereda ese FOLLOW. Termino puede ir seguido por OR, o por FOLLOW de Expr cuando ColaOR ⇒ ε. Análogamente, Unaria añade AND y hereda FOLLOW de Termino. Comparacion y Valor heredan FOLLOW de Unaria.
+
+La siguiente tabla justifica cada conjunto. FIRST se obtiene de abajo hacia arriba, desde los no terminales que empiezan con un terminal; FOLLOW, de arriba hacia abajo, desde el símbolo inicial. Los números remiten a las producciones de la sección 3.
+
+| No terminal | FIRST y su origen | FOLLOW y su origen |
+| --- | --- | --- |
+| Programa | {WHEN}: FIRST(Regla) por 1; Regla no es anulable. | {$}: símbolo inicial; no aparece en ningún lado derecho. |
+| Resto | {WHEN, ε}: FIRST(Regla) por 2 y ε por 3. | {$}: cierra 1, por lo que hereda FOLLOW(Programa); en 2 se hereda a sí mismo. |
+| Regla | {WHEN}: 4 empieza con WHEN. | {WHEN, $}: en 1 y 2 la sigue Resto, que aporta WHEN; como Resto es anulable, se agregan FOLLOW(Programa) y FOLLOW(Resto). |
+| Expr | {ID, NOT, PARENT_IZQ}: FIRST(Termino) por 5. | {THEN, PARENT_DER}: la siguen THEN en 4 y PARENT_DER en 12. |
+| ColaOR | {OR, ε}: OR por 6 y ε por 7. | {THEN, PARENT_DER}: cierra 5 y hereda FOLLOW(Expr); en 6 se hereda a sí misma. |
+| Termino | {ID, NOT, PARENT_IZQ}: FIRST(Unaria) por 8. | {OR, THEN, PARENT_DER}: la sigue ColaOR en 5 y 6, que aporta OR; como ColaOR es anulable, se agregan FOLLOW(Expr) y FOLLOW(ColaOR). |
+| ColaAND | {AND, ε}: AND por 9 y ε por 10. | {OR, THEN, PARENT_DER}: cierra 8 y hereda FOLLOW(Termino). |
+| Unaria | {ID, NOT, PARENT_IZQ}: NOT por 11, PARENT_IZQ por 12 y FIRST(Comparacion) por 13. | {AND, OR, THEN, PARENT_DER}: la sigue ColaAND en 8 y 9, que aporta AND; como ColaAND es anulable, se agregan FOLLOW(Termino) y FOLLOW(ColaAND). |
+| Comparacion | {ID}: 14 empieza con ID. | {AND, OR, THEN, PARENT_DER}: cierra 13 y hereda FOLLOW(Unaria). |
+| Valor | {NUM, TRUE, FALSE}: primer símbolo de 15, 16 y 17. | {AND, OR, THEN, PARENT_DER}: cierra 14 y hereda FOLLOW(Comparacion). |
+| Accion | {ID}: 18 empieza con ID. | {PUNTO_COMA}: la sigue PUNTO_COMA en 4. |
 
 Las tablas completas, para los once no terminales, están en first_follow_tabla.txt. El informe incorpora sus tablas FIRST y FOLLOW junto con la tabla predictiva. Se genera desde la GLC formal del proyecto, para evitar divergencias de transcripción.
 
