@@ -62,7 +62,9 @@ Un programa es texto UTF-8 con una o más reglas de la forma `WHEN condición TH
 - La condición es una comparación `identificador operador valor`, con los operadores `>`, `<`, `>=`, `<=`, `==` y `!=`, y un valor que es un entero sin signo, `TRUE` o `FALSE`.
 - Las comparaciones se combinan con `AND` y `OR`, se niegan con `NOT` y se agrupan con paréntesis. `NOT` tiene más prioridad que `AND`, y `AND` más que `OR`.
 - La acción son dos identificadores: verbo y destino.
-- Las palabras reservadas no distinguen mayúsculas de minúsculas. Los espacios, tabuladores y saltos de línea solo separan tokens; los saltos CRLF de Windows y el BOM inicial se normalizan antes de analizar.
+- Las palabras reservadas no distinguen mayúsculas de minúsculas. Los espacios, tabuladores y saltos de línea LF solo separan tokens.
+
+La línea de comandos normaliza los saltos CRLF y CR a LF y elimina el BOM inicial antes de analizar, tanto desde archivo como con `--texto`. La API `analizar_programa` recibe el texto sin normalizar: al usarla directamente, debes convertir esos saltos a LF y eliminar el BOM inicial si están presentes.
 
 ```text
 WHEN humedad < 30 AND lluvia == FALSE THEN abrir valvula;
