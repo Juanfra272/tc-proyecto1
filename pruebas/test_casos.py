@@ -70,6 +70,11 @@ class PruebasCLI(unittest.TestCase):
         self.assertIn("línea 2, columna 17", salida)
         self.assertTrue(salida.endswith("\tWHEN humedad < THEN abrir valvula;\n  \t               ^\n"))
 
+    def test_texto_con_bom_inicial(self):
+        codigo, salida = cli("--texto", "\ufeffWHEN humedad < 30 THEN abrir valvula;")
+        self.assertEqual(codigo, 0)
+        self.assertIn("ACEPTADO. 1 regla.", salida)
+
     def test_texto_con_crlf(self):
         codigo, salida = cli("-t", "WHEN a < 1 THEN x y;\r\nWHEN b < 2 THEN x y;")
         self.assertEqual(codigo, 0)

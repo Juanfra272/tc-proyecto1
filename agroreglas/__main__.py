@@ -41,8 +41,9 @@ def main(argv=None):
         except (OSError, UnicodeDecodeError) as error:
             print(f"No se pudo leer {args.archivo}: {error}", file=sys.stderr)
             return 2
-    # El lexer solo admite LF como salto de línea.
-    fuente = fuente.replace("\r\n", "\n").replace("\r", "\n")
+    # El lexer solo admite LF como salto de línea. El BOM se ignora al inicio
+    # tanto para archivos como para el argumento --texto.
+    fuente = fuente.removeprefix("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
 
     try:
         ast = analizar_programa(fuente)
