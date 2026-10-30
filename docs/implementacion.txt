@@ -1,6 +1,6 @@
 AgroReglas: diseño e implementación del parser
 
-Autoría: Juanfra.
+Autoría: Juan Francisco Muñoz Veloso.
 
 1. Interfaz e integración
 

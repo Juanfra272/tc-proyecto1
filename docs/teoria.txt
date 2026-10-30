@@ -1,6 +1,6 @@
 AgroReglas: definición y análisis formal
 
-Autoría: Fernando.
+Autoría: Fernando Alonso Valdés Gómez.
 
 1. Introducción y dominio
 

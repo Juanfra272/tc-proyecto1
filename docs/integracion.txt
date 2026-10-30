@@ -1,6 +1,6 @@
 AgroReglas: integración, ejecución y casos de prueba
 
-Autoría: Vicente.
+Autoría: Vicente Rodrigo Rivera Sánchez.
 
 1. Lexer como módulo
 
