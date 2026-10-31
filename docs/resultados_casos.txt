@@ -1,6 +1,4 @@
-Resultados de los 25 casos de prueba
-
-Generado por python -m herramientas.evidencia_parser. Cada rechazo indica la línea y la columna del primer error. Todos son sintácticos salvo L05, que es léxico. El mensaje completo de cada rechazo aparece en la tabla siguiente.
+Resultados de los casos de prueba
 
 | ID | Entrada | Esperado | Obtenido | Observación |
 | --- | --- | --- | --- | --- |
@@ -9,44 +7,25 @@ Generado por python -m herramientas.evidencia_parser. Cada rechazo indica la lí
 | V03 | `WHEN temperatura >= 28 AND humedad <= 40 OR emergencia == TRUE THEN activar alarma;` | aceptar | aceptar | Precedencia AND sobre OR |
 | V04 | `WHEN NOT (lluvia == TRUE OR humedad > 60) AND nivel != 0 THEN encender bomba;` | aceptar | aceptar | Negación y agrupación |
 | V05 | `WHEN NOT NOT (humedad < 30 AND (lluvia == FALSE OR reserva > 0)) THEN abrir valvula; WHEN nivel == 0 THEN apagar bomba;` | aceptar | aceptar | Negación repetida, anidamiento y varias reglas |
-| I01 | `WHEN humedad < THEN abrir valvula;` | rechazar | rechazar, 1:16 | Falta el valor después del operador relacional |
-| I02 | `WHEN humedad < 30 AND THEN abrir valvula;` | rechazar | rechazar, 1:23 | Falta la condición después de AND |
-| I03 | `WHEN () THEN abrir valvula;` | rechazar | rechazar, 1:7 | Grupo vacío |
-| I04 | `WHEN (humedad < 30 THEN abrir valvula;` | rechazar | rechazar, 1:20 | Falta el paréntesis de cierre |
-| I05 | `WHEN humedad < 30 THEN abrir valvula` | rechazar | rechazar, 1:37 | Falta el punto y coma final |
+| I01 | `WHEN humedad < THEN abrir valvula;` | rechazar | rechazar. Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba un número, TRUE o FALSE; se encontró 'THEN'. | Falta el valor después del operador relacional |
+| I02 | `WHEN humedad < 30 AND THEN abrir valvula;` | rechazar | rechazar. Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, '(' o NOT; se encontró 'THEN'. | Falta la condición después de AND |
+| I03 | `WHEN () THEN abrir valvula;` | rechazar | rechazar. Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, '(' o NOT; se encontró ')'. | Grupo vacío |
+| I04 | `WHEN (humedad < 30 THEN abrir valvula;` | rechazar | rechazar. Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba ')' para cerrar el grupo; se encontró 'THEN'. | Falta el paréntesis de cierre |
+| I05 | `WHEN humedad < 30 THEN abrir valvula` | rechazar | rechazar. Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba ';' al final de la regla; se encontró fin de entrada. | Falta el punto y coma final |
 | V06 | `WHEN temperatura > 35 AND radiacion >= 800 AND viento <= 20 THEN desplegar malla;` | aceptar | aceptar | AND encadenado con asociación izquierda |
 | V07 | `WHEN plaga == TRUE OR hongo == TRUE OR humedad > 85 THEN notificar agronomo;` | aceptar | aceptar | OR encadenado con valores booleanos y numéricos |
 | V08 | `WHEN NOT helada == TRUE AND temperatura > 2 THEN abrir invernadero;` | aceptar | aceptar | NOT sin paréntesis niega solo la primera comparación |
 | V09 | `WHEN (ph < 5 OR ph > 8) AND (riego_activo == FALSE) THEN corregir ph;` | aceptar | aceptar | Dos grupos, uno con una sola comparación |
 | V10 | `WHEN hora == 6 THEN iniciar riego;\nWHEN hora == 8 THEN detener riego;\nWHEN tanque < 10 THEN llenar tanque;` | aceptar | aceptar | Tres reglas en líneas distintas |
-| I06 | `WHEN humedad 30 THEN abrir valvula;` | rechazar | rechazar, 1:14 | Falta el operador relacional |
-| I07 | `WHEN humedad < 30 abrir valvula;` | rechazar | rechazar, 1:19 | Falta THEN entre la condición y la acción |
-| I08 | `WHEN humedad < 30 THEN abrir;` | rechazar | rechazar, 1:29 | Acción incompleta: falta el destino |
-| I09 | `humedad < 30 THEN abrir valvula;` | rechazar | rechazar, 1:1 | La regla no comienza con WHEN |
-| I10 | `WHEN humedad < 30) THEN abrir valvula;` | rechazar | rechazar, 1:18 | Paréntesis de cierre sin apertura |
-| L01 | ` \n\t` | rechazar | rechazar, 1:1 | Entrada sin reglas, solo espacios |
+| I06 | `WHEN humedad 30 THEN abrir valvula;` | rechazar | rechazar. Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba un operador relacional (>, <, >=, <=, ==, !=); se encontró '30'. | Falta el operador relacional |
+| I07 | `WHEN humedad < 30 abrir valvula;` | rechazar | rechazar. Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba THEN, AND o OR; se encontró 'abrir'. | Falta THEN entre la condición y la acción |
+| I08 | `WHEN humedad < 30 THEN abrir;` | rechazar | rechazar. Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró ';'. | Acción incompleta: falta el destino |
+| I09 | `humedad < 30 THEN abrir valvula;` | rechazar | rechazar. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró 'humedad'. | La regla no comienza con WHEN |
+| I10 | `WHEN humedad < 30) THEN abrir valvula;` | rechazar | rechazar. Error sintáctico en línea 1, columna 18 (desplazamiento 17): se esperaba THEN; se encontró ')'. | Paréntesis de cierre sin apertura |
+| L01 | ` \n\t` | rechazar | rechazar. Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró fin de entrada. | Entrada sin reglas, solo espacios |
 | L02 | `when Humedad < 30 then Abrir Valvula;` | aceptar | aceptar | Palabras reservadas en minúsculas y nombres con mayúsculas |
 | L03 | `WHEN NOT NOT NOT ((((nivel == 0)))) THEN apagar bomba;` | aceptar | aceptar | Negación triple y cuatro paréntesis redundantes |
 | L04 | `WHEN WHEN_sensor >= 007 AND not_listo == 0 THEN abrir valvula;` | aceptar | aceptar | Identificadores que empiezan con palabras reservadas y ceros a la izquierda |
-| L05 | `WHEN humedad < 3.5 THEN abrir valvula;` | rechazar | rechazar, 1:17 | Número decimal: el punto no pertenece al alfabeto |
+| L05 | `WHEN humedad < 3.5 THEN abrir valvula;` | rechazar | rechazar. Error léxico en línea 1, columna 17 (desplazamiento 16): símbolo no reconocido '.'. | Número decimal: el punto no pertenece al alfabeto |
 
 Coinciden 25 de 25 resultados con lo esperado.
-
-Mensajes de los rechazos
-
-Texto exacto que entrega el analizador en cada caso rechazado.
-
-| ID | Mensaje |
-| --- | --- |
-| I01 | Error sintáctico en línea 1, columna 16 (desplazamiento 15): se esperaba un número, TRUE o FALSE; se encontró 'THEN'. |
-| I02 | Error sintáctico en línea 1, columna 23 (desplazamiento 22): se esperaba un identificador, '(' o NOT; se encontró 'THEN'. |
-| I03 | Error sintáctico en línea 1, columna 7 (desplazamiento 6): se esperaba un identificador, '(' o NOT; se encontró ')'. |
-| I04 | Error sintáctico en línea 1, columna 20 (desplazamiento 19): se esperaba ')' para cerrar el grupo; se encontró 'THEN'. |
-| I05 | Error sintáctico en línea 1, columna 37 (desplazamiento 36): se esperaba ';' al final de la regla; se encontró fin de entrada. |
-| I06 | Error sintáctico en línea 1, columna 14 (desplazamiento 13): se esperaba un operador relacional (>, <, >=, <=, ==, !=); se encontró '30'. |
-| I07 | Error sintáctico en línea 1, columna 19 (desplazamiento 18): se esperaba THEN, AND o OR; se encontró 'abrir'. |
-| I08 | Error sintáctico en línea 1, columna 29 (desplazamiento 28): se esperaba un identificador; se encontró ';'. |
-| I09 | Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró 'humedad'. |
-| I10 | Error sintáctico en línea 1, columna 18 (desplazamiento 17): se esperaba THEN; se encontró ')'. |
-| L01 | Error sintáctico en línea 1, columna 1 (desplazamiento 0): se esperaba WHEN; se encontró fin de entrada. |
-| L05 | Error léxico en línea 1, columna 17 (desplazamiento 16): símbolo no reconocido '.'. |

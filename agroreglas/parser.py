@@ -1,14 +1,14 @@
 """Reconocimiento LL(1) con pila explícita y construcción de AST sin recursión.
 
 La entrada son los pares (tipo, lexema) del notebook y el texto original.
-La gramática y la tabla se obtienen de la especificación de Fernando.
+La gramática y la tabla se obtienen de la especificación del proyecto.
 """
 
 from dataclasses import dataclass
 import json
 from pathlib import Path
 
-from herramientas.validar_gramatica import analizar
+from .gramatica import analizar
 
 
 @dataclass(frozen=True)
@@ -21,7 +21,7 @@ class Token:
 
 
 class ErrorSintactico(ValueError):
-    """Primer error, con datos estructurados para las pruebas y la futura CLI."""
+    """Primer error, con datos estructurados para las pruebas y la CLI."""
 
     def __init__(self, token, simbolo, esperados):
         self.token = token
@@ -95,8 +95,9 @@ def _ubicar(tokens, fuente):
 def _cargar_tabla():
     ruta = Path(__file__).resolve().parents[1] / "especificacion" / "gramatica.json"
     gramatica = json.loads(ruta.read_text(encoding="utf-8"))
-    _, _, tabla, producciones, conflictos, izquierda, _, _ = analizar(gramatica)
-    if conflictos or izquierda:
+    resultado = analizar(gramatica)
+    tabla, producciones = resultado.tabla, resultado.producciones
+    if resultado.conflictos or resultado.izquierda:
         raise ValueError("La gramática debe ser LL(1) y no tener recursión izquierda.")
     reglas = {numero: (a, tuple(rhs)) for numero, a, rhs, _ in producciones}
     esperados = {
@@ -189,7 +190,9 @@ def analizar_tokens(tokens, fuente, traza=None):
             if numero is None:
                 esperados = _ESPERADOS[simbolo]
                 # FOLLOW reúne todos los contextos; aquí solo se cierran grupos abiertos.
-                if "PARENT_DER" in esperados and "PARENT_DER" not in pila:
+                if "PARENT_DER" in pila:
+                    esperados = esperados - {"THEN"}
+                else:
                     esperados = esperados - {"PARENT_DER"}
                 raise ErrorSintactico(actual, simbolo, esperados)
             _, rhs = _REGLAS[numero]

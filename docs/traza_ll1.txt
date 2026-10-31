@@ -1,10 +1,8 @@
 Traza del análisis LL(1)
 
-Generado por `python -m herramientas.evidencia_parser` con el mismo parser que analiza los casos. La pila se escribe con la cima a la derecha. La entrada muestra los lexemas pendientes; la tabla se consulta con su tipo de token. Cuando la cima es un no terminal A y el token es de tipo t, la acción indica la producción M[A, t]; cuando es un terminal, indica si coincide con el token. Las marcas de reducción que construyen el AST no se muestran, porque no son símbolos de la gramática.
+La pila se escribe con la cima a la derecha y la entrada muestra los lexemas pendientes. Las marcas que construyen el AST no se muestran.
 
-Traza de V01
-
-Entrada: `WHEN humedad < 30 THEN abrir valvula;`. La regla mínima recorre todas las filas que necesita una comparación numérica. Las colas ColaAND y ColaOR derivan ε ante THEN, y Resto deriva ε ante el fin de entrada.
+V01: `WHEN humedad < 30 THEN abrir valvula;`
 
 | Paso | Pila | Entrada | Acción |
 | --- | --- | --- | --- |
@@ -29,9 +27,7 @@ Entrada: `WHEN humedad < 30 THEN abrir valvula;`. La regla mínima recorre todas
 | 19 | `$ Resto` | `$` | 3: Resto → ε |
 | 20 | `$` | `$` | aceptar |
 
-Traza de I04
-
-Entrada: `WHEN (humedad < 30 THEN abrir valvula;`. El grupo abierto apila PARENT_DER. Ante THEN, la tabla permite cerrar las colas internas con ε porque THEN pertenece a FOLLOW de ColaAND y ColaOR; el error aparece al cotejar el terminal PARENT_DER con THEN.
+I04: `WHEN (humedad < 30 THEN abrir valvula;`
 
 | Paso | Pila | Entrada | Acción |
 | --- | --- | --- | --- |

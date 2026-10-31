@@ -1,4 +1,4 @@
-"""Pruebas de Vicente: los 25 casos documentados y la ejecución desde texto o archivo."""
+"""Pruebas: los 25 casos documentados y la ejecución desde texto o archivo."""
 
 import contextlib
 import io

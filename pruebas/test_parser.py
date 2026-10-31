@@ -1,4 +1,4 @@
-"""Pruebas de Juanfra: AST completo de V01 a V05 y contrato de errores."""
+"""Pruebas: AST completo de V01 a V05 y contrato de errores."""
 
 import json
 from pathlib import Path
@@ -135,6 +135,19 @@ class PruebasParser(unittest.TestCase):
         with self.assertRaises(ErrorSintactico) as capturado:
             self.analizar("WHEN (a < 1 abrir valvula;")
         self.assertIn("PARENT_DER", capturado.exception.tokens_esperados)
+
+    def test_esperados_respetan_el_grupo_pendiente(self):
+        for fuente in ("WHEN (humedad < 30 x THEN abrir valvula;",
+                       "WHEN ((humedad < 30) x THEN abrir valvula;"):
+            with self.subTest(fuente=fuente):
+                with self.assertRaises(ErrorSintactico) as capturado:
+                    self.analizar(fuente)
+                self.assertIn("PARENT_DER", capturado.exception.tokens_esperados)
+                self.assertNotIn("THEN", capturado.exception.tokens_esperados)
+        with self.assertRaises(ErrorSintactico) as capturado:
+            self.analizar("WHEN (humedad < 30) x THEN abrir valvula;")
+        self.assertIn("THEN", capturado.exception.tokens_esperados)
+        self.assertNotIn("PARENT_DER", capturado.exception.tokens_esperados)
 
     def test_booleanos_del_arbol_en_mayusculas(self):
         from agroreglas.arbol import formatear_arbol

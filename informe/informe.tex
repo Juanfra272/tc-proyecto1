@@ -1,4 +1,6 @@
-% Compilar con python -m herramientas.informe; genera las secciones desde docs.
+% Informe del proyecto. Compilar desde esta carpeta con:
+% latexmk -lualatex -interaction=nonstopmode -halt-on-error
+% -outdir=build informe.tex
 \documentclass[11pt,a4paper]{article}
 
 \usepackage[spanish,es-noshorthands]{babel}
@@ -14,20 +16,33 @@
 \usepackage{xurl}
 
 % Fuentes incluidas en TeX Live; DejaVu cubre las flechas y símbolos que faltan.
-\directlua{luaotfload.add_fallback("simbolos", {"file:DejaVuSerif.ttf:mode=harf;"})}
-\setmainfont{LibertinusSerif}[Extension=.otf, UprightFont=*-Regular, BoldFont=*-Bold, ItalicFont=*-Italic, BoldItalicFont=*-BoldItalic, RawFeature={fallback=simbolos}]
+\directlua{luaotfload.add_fallback("simbolos",
+{"file:DejaVuSerif.ttf:mode=harf;"})}
+\setmainfont{LibertinusSerif}[Extension=.otf, UprightFont=*-Regular,
+  BoldFont=*-Bold, ItalicFont=*-Italic, BoldItalicFont=*-BoldItalic,
+RawFeature={fallback=simbolos}]
 \setmonofont{DejaVuSansMono}[Extension=.ttf, BoldFont=*-Bold, Scale=0.85]
 
-\hypersetup{colorlinks, linkcolor=black, urlcolor=teal!70!black}
-\fvset{fontsize=\small, frame=leftline, framerule=0.6pt, rulecolor=\color{gray!60}, xleftmargin=1em}
+\hypersetup{colorlinks, linkcolor=black, urlcolor=teal!70!black,
+pdftitle={AgroReglas: analizador sintáctico LL(1)}}
+\fvset{fontsize=\small, frame=leftline, framerule=0.6pt,
+rulecolor=\color{gray!60}, xleftmargin=1em}
 \setlength{\parindent}{0pt}
 \setlength{\emergencystretch}{3em}
 \setlength{\parskip}{0.6em}
 \renewcommand{\arraystretch}{1.15}
-\newcommand{\autoria}[1]{\emph{Autoría: #1.}\par}
-\newcommand{\parte}[2]{\clearpage\phantomsection\addcontentsline{toc}{part}{#1}{\LARGE\bfseries #1\par}\vspace{0.3em}\autoria{#2}\vspace{0.6em}}
 
 \newcommand{\repositorio}{https://github.com/Juanfra272/tc-proyecto1}
+\newcommand{\tk}[1]{\texttt{#1}}
+\newcommand{\nt}[1]{\textit{#1}}
+\newcolumntype{Y}[1]{>{\raggedright\arraybackslash\hsize=#1\hsize}X}
+
+\newcommand{\captura}[3]{%
+  \begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=#2\textwidth]{../docs/evidencias/#1}
+    \caption{#3}
+\end{figure}}
 
 \begin{document}
 
@@ -49,91 +64,1036 @@
   {\large Octubre de 2026\par}
 \end{titlepage}
 
+\setcounter{tocdepth}{1}
 \tableofcontents
-
-\parte{Definición y análisis formal}{Fernando Alonso Valdés Gómez}
-\input{generado/teoria}
-
-\parte{Diseño e implementación del parser}{Juan Francisco Muñoz Veloso}
-\input{generado/implementacion}
-
-\parte{Integración, ejecución y casos de prueba}{Vicente Rodrigo Rivera Sánchez}
-\input{generado/integracion}
-
 \clearpage
-\phantomsection
-\addcontentsline{toc}{part}{Conclusiones}
-{\LARGE\bfseries Conclusiones\par}
 
-AgroReglas cumple los mínimos del enunciado con siete palabras reservadas, seis operadores relacionales, dos conectores lógicos, varias reglas por programa y una extensión de negación y agrupación que forma parte de la gramática, la tabla, el parser y las pruebas.
+\section{Introducción y dominio seleccionado}
 
-La gramática final no tiene recursión izquierda ni prefijos comunes, y la tabla predictiva tiene 25 celdas ocupadas y ningún conflicto. Por eso el parser decide cada paso con un solo token de anticipación, sin retroceso. El verificador vuelve a calcular FIRST, FOLLOW y la tabla desde \texttt{especificacion/gramatica.json}, y el parser carga esa misma tabla, así que la teoría documentada y el código no pueden divergir sin que falle la verificación.
+AgroReglas es un lenguaje de dominio específico para expresar reglas
+de monitoreo agrícola. Cada regla relaciona lecturas de sensores con
+una acción sobre un dispositivo. Por ejemplo, abre una válvula cuando
+la humedad del suelo baja de un umbral y no llueve:
 
-El parser usa una pila explícita en lugar de recursión, por lo que una entrada con 1100 paréntesis anidados se analiza sin alcanzar el límite de recursión de Python. Construye el AST en el mismo recorrido mediante reducciones y respeta la precedencia y la asociación izquierda acordadas.
+\begin{Verbatim}
+WHEN humedad < 30 AND lluvia == FALSE THEN abrir valvula;
+\end{Verbatim}
 
-Las 25 entradas documentadas obtienen el resultado esperado y cada rechazo informa la línea, la columna, el token encontrado y lo que se esperaba. La ejecución desde archivo o texto señala la posición del error en la línea original.
+Elegimos este dominio porque el riego, la ventilación y las alertas
+se describen de forma natural como una condición sobre varias
+lecturas y una acción. Esa forma exige conectores lógicos y
+precedencia, que es lo que el análisis sintáctico debe resolver.
 
-El parser solo comprueba sintaxis: no evalúa condiciones ni verifica que los sensores o dispositivos existan, y acepta comparaciones como \texttt{temperatura > TRUE}. Una etapa semántica posterior podría validar tipos y vocabulario del dominio sobre el AST que ya se construye.
+El informe sigue las fases del enunciado. Define el lenguaje, diseña
+y analiza una gramática libre de contexto, calcula FIRST y FOLLOW,
+construye la tabla LL(1), explica el parser predictivo con pila
+explícita que construye el AST y documenta 25 casos de prueba. El
+parser comprueba solo la sintaxis. No ejecuta dispositivos, no
+verifica que los sensores o las acciones existan y no revisa tipos,
+por lo que \texttt{temperatura > TRUE} es una condición sintácticamente válida.
 
-\clearpage
-\phantomsection
-\addcontentsline{toc}{part}{Anexos}
-{\LARGE\bfseries Anexos\par}
+\section{Especificación del lenguaje}
 
-\section*{A. Código fuente y repositorio GitHub}
-\addcontentsline{toc}{section}{A. Código fuente y repositorio GitHub}
+\subsection{Alfabeto y tokens}
 
-El repositorio GitHub contiene el código fuente completo, la especificación, las pruebas, el README, los archivos auxiliares y este informe:
+El alfabeto relevante tiene letras ASCII, dígitos, el guion bajo, los
+signos \tk{> < = ! ; \char40{} \char41{}} y los separadores espacio, tabulador y
+salto de línea. Un programa es una secuencia de tokens (tipo, lexema)
+que produce \texttt{analizador\_lexico}, la función del lexer
+entregado. La gramática consume el tipo y el parser conserva el
+lexema para los nombres, los valores y el operador concreto.
+El patrón \texttt{\textbackslash{}d} del lexer entregado también
+acepta dígitos Unicode en los números; los identificadores usan ASCII.
+
+\begin{xltabular}{\textwidth}{l l X}
+  \toprule
+  \textbf{Categoría}  & \textbf{Token}                    &
+  \textbf{Lexemas}                                                    \\
+  \midrule
+  Palabras reservadas & \tk{WHEN THEN AND OR NOT TRUE FALSE} & Los
+  siete nombres, sin distinguir mayúsculas de minúsculas         \\
+  Identificador       & \tk{ID}                           & Letra o
+  guion bajo seguido de letras, dígitos o guiones bajos ASCII \\
+  Número              & \tk{NUM}                          & Entero
+  sin signo ni punto decimal                                   \\
+  Relacional          & \tk{OP\_REL}                      & \tk{>=},
+  \tk{<=}, \tk{==}, \tk{!=}, \tk{>}, \tk{<}                  \\
+  Fin de regla        & \tk{PUNTO\_COMA}                  & \tk{;}
+  \\
+  Agrupación          & \tk{PARENT\_IZQ}, \tk{PARENT\_DER} & \tk{\char40{}},
+  \tk{\char41{}}                                                      \\
+  Separadores         & No llegan al parser               & Espacio,
+  tabulador y salto de línea                                 \\
+  \bottomrule
+\end{xltabular}
+
+Una palabra reservada se reconoce después de leer el identificador
+completo: \tk{when} produce el tipo \tk{WHEN}, pero \tk{WHEN\_sensor}
+sigue siendo \tk{ID}. Los nombres conservan su escritura original y
+\tk{sensor} y \tk{Sensor} son identificadores distintos. Un carácter
+fuera de estas categorías es un error léxico. El marcador \tk{\$}
+indica el fin de entrada, lo añade el parser y no es un carácter del lenguaje.
+
+El lenguaje cumple los mínimos del enunciado. Tiene siete palabras
+reservadas, identificadores, valores numéricos y booleanos, seis
+operadores relacionales, los conectores \tk{AND}, \tk{OR} y \tk{NOT},
+una sentencia principal (la regla), varias reglas por programa y
+construcciones compuestas.
+
+\subsection{Reglas de formación}
+
+Una regla tiene la forma \tk{WHEN condición THEN verbo destino;}. Un
+programa contiene una o más reglas. La condición combina
+comparaciones. Una comparación es un identificador, un operador
+relacional y un valor, que es un número o un booleano. No hay
+comparaciones encadenadas ni identificadores como valor derecho. La
+acción son dos identificadores, verbo y destino. Son vocabulario del
+dominio y no palabras reservadas. El punto y coma termina cada regla;
+el salto de línea solo separa tokens.
+
+La precedencia, de mayor a menor, es agrupación, comparación,
+\tk{NOT}, \tk{AND} y \tk{OR}. Así, \tk{NOT humedad < 30} niega la
+comparación completa. Los operadores del mismo nivel asocian a la izquierda.
+
+El lenguaje no tiene comentarios, cadenas, números negativos ni
+decimales. La ausencia de negativos y decimales viene del patrón de
+\tk{NUM} del lexer entregado. Por eso las reglas usan magnitudes
+enteras y no pueden expresar, por ejemplo, un pH de 6,5 ni una
+temperatura bajo cero.
+
+\subsection{Extensión: negación y agrupación}
+
+La extensión creativa es el operador \tk{NOT} y la agrupación con
+paréntesis. Sin ellos, el lenguaje solo encadena comparaciones con
+\tk{AND} y \tk{OR}, y \tk{AND} asocia antes que \tk{OR}. Eso impide
+escribir dos condiciones habituales en riego:
+
+\begin{itemize}
+  \item Una alternativa dentro de una conjunción. «Corregir el pH si
+    está fuera de rango y el riego está apagado» se escribe
+    \texttt{\char40{}ph < 5 OR ph > 8\char41{} AND riego\_activo == FALSE}. Sin
+    paréntesis, \tk{AND} se evaluaría primero y la regla diría otra
+    cosa (caso V09).
+  \item Negar varias condiciones a la vez. «Encender la bomba si no
+    llueve ni la humedad supera 60, y el nivel no es 0» se escribe
+    \texttt{NOT \char40{}lluvia == TRUE OR humedad > 60\char41{} AND
+    nivel != 0}. Sin
+    \tk{NOT} habría que aplicar De Morgan a mano: invertir cada
+    operador y cambiar \tk{OR} por \tk{AND}. La regla resultante es
+    equivalente, pero ya no se lee como la política que describe, y
+    un error de inversión pasa inadvertido (casos V04 y V05).
+\end{itemize}
+
+La extensión está en la gramática (producciones 11 y 12), en FIRST y
+FOLLOW, en la tabla LL(1), en el parser y en los casos de prueba.
+
+\subsection{Cinco ejemplos válidos y cinco inválidos}
+
+Los inválidos tienen tokens reconocibles por el lexer, por lo que
+fallan en la sintaxis. Los diez forman parte de los 25 casos de la
+sección~\ref{sec:casos}.
+
+\begin{xltabular}{\textwidth}{l Y{1.2} Y{0.8}}
+  \toprule
+  \textbf{ID} & \textbf{Entrada}
+  & \textbf{Qué ilustra o por qué es inválida} \\
+  \midrule
+  \endhead
+  V01         & \tk{WHEN humedad < 30 THEN abrir valvula;}
+  & Regla mínima con valor numérico            \\
+  V02         & \tk{WHEN lluvia == FALSE THEN activar riego;}
+  & Valor booleano                             \\
+  V03         & \tk{WHEN temperatura >= 28 AND humedad <= 40 OR
+  emergencia == TRUE THEN activar alarma;}
+  & \tk{AND} tiene prioridad sobre \tk{OR}     \\
+  V04         & \tk{WHEN NOT \char40{}lluvia == TRUE OR humedad >
+    60\char41{} AND
+  nivel != 0 THEN encender bomba;}
+  & Negación sobre un grupo                    \\
+  V05         & \tk{WHEN NOT NOT \char40{}humedad < 30 AND
+    \char40{}lluvia == FALSE
+    OR reserva > 0\char41{}\char41{} THEN abrir valvula; WHEN nivel
+    == 0 THEN apagar
+  bomba;}                                          & Negación
+  repetida, anidamiento y dos reglas \\
+  \midrule
+  I01         & \tk{WHEN humedad < THEN abrir valvula;}
+  & Falta el valor después de \tk{<}           \\
+  I02         & \tk{WHEN humedad < 30 AND THEN abrir valvula;}
+  & Falta la condición después de \tk{AND}     \\
+  I03         & \tk{WHEN \char40{}\char41{} THEN abrir valvula;}
+  & Grupo vacío                                \\
+  I04         & \tk{WHEN \char40{}humedad < 30 THEN abrir valvula;}
+  & Falta el paréntesis de cierre              \\
+  I05         & \tk{WHEN humedad < 30 THEN abrir valvula}
+  & Falta el punto y coma final                \\
+  \bottomrule
+\end{xltabular}
+
+\section{Gramática libre de contexto}
+\label{sec:glc}
+
+La gramática es $G = (N, T, P, S)$ con símbolo inicial $S = \nt{Programa}$.
+
+\begin{itemize}
+  \item $N = \{$\nt{Programa}, \nt{Resto}, \nt{Regla}, \nt{Expr},
+      \nt{ColaOR}, \nt{Termino}, \nt{ColaAND}, \nt{Unaria},
+    \nt{Comparacion}, \nt{Valor}, \nt{Accion}$\}$.
+  \item $T = \{$\tk{WHEN}, \tk{THEN}, \tk{OR}, \tk{AND}, \tk{NOT},
+      \tk{PARENT\_IZQ}, \tk{PARENT\_DER}, \tk{ID}, \tk{OP\_REL},
+    \tk{NUM}, \tk{TRUE}, \tk{FALSE}, \tk{PUNTO\_COMA}$\}$.
+\end{itemize}
+
+$P$ tiene 18 producciones. Su numeración coincide con la tabla
+LL(1) y con el orden de las alternativas en
+\texttt{especificacion/gramatica.json}.
+
+\begin{Verbatim}
+ 1. Programa    → Regla Resto
+ 2. Resto       → Regla Resto
+ 3. Resto       → ε
+ 4. Regla       → WHEN Expr THEN Accion PUNTO_COMA
+ 5. Expr        → Termino ColaOR
+ 6. ColaOR      → OR Termino ColaOR
+ 7. ColaOR      → ε
+ 8. Termino     → Unaria ColaAND
+ 9. ColaAND     → AND Unaria ColaAND
+10. ColaAND     → ε
+11. Unaria      → NOT Unaria
+12. Unaria      → PARENT_IZQ Expr PARENT_DER
+13. Unaria      → Comparacion
+14. Comparacion → ID OP_REL Valor
+15. Valor       → NUM
+16. Valor       → TRUE
+17. Valor       → FALSE
+18. Accion      → ID ID
+\end{Verbatim}
+
+Cada no terminal cubre un nivel del lenguaje. \nt{Programa} y
+\nt{Resto} reúnen las reglas, y \nt{Regla} es una regla completa.
+\nt{Expr} une términos con \tk{OR}, \nt{Termino} une unarias con
+\tk{AND} y \nt{Unaria} resuelve la negación, el grupo o la
+comparación. \nt{Comparacion} y \nt{Valor} describen la
+comparación, y \nt{Accion} el verbo y el destino. \nt{ColaOR} y
+\nt{ColaAND} repiten sus operadores sin recursión izquierda.
+
+Una entrada vacía no pertenece al lenguaje, porque \nt{Programa}
+exige una \nt{Regla}. Solo \nt{Resto}, \nt{ColaOR} y \nt{ColaAND}
+derivan $\varepsilon$. La derivación por la izquierda de los tipos
+de V01 muestra cómo se conecta la gramática con el lexer:
+
+\begin{Verbatim}
+Programa
+⇒ Regla Resto
+⇒ WHEN Expr THEN Accion PUNTO_COMA Resto
+⇒ WHEN Termino ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN Unaria ColaAND ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN Comparacion ColaAND ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL Valor ColaAND ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM ColaAND ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM ColaOR THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM THEN Accion PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM THEN ID ID PUNTO_COMA Resto
+⇒ WHEN ID OP_REL NUM THEN ID ID PUNTO_COMA
+\end{Verbatim}
+
+\section{Análisis de la gramática}
+\label{sec:analisis}
+
+\subsection{Recursión izquierda}
+
+Una gramática tiene recursión izquierda si algún no terminal $A$
+cumple $A \Rightarrow^{+} A\alpha$. Un descenso predictivo sobre
+esa estructura intentaría reconocer $A$ sin consumir entrada y no terminaría.
+
+La formulación habitual de las condiciones es \nt{Expr} $\to$
+\nt{Expr} \tk{OR} \nt{Termino} $\mid$ \nt{Termino} y \nt{Termino}
+$\to$ \nt{Termino} \tk{AND} \nt{Unaria} $\mid$ \nt{Unaria}. Ambas
+tienen recursión izquierda inmediata, y las dos alternativas de
+cada una empiezan con los mismos tokens, de modo que competirían
+por las mismas celdas de la tabla. Aplicamos la transformación $A
+\to A\alpha \mid \beta$ en $A \to \beta A'$ y $A' \to \alpha A'
+\mid \varepsilon$. De ella salen \nt{Expr} con \nt{ColaOR}, y
+\nt{Termino} con \nt{ColaAND}, que conservan la secuencia de
+operandos y operadores.
+
+La gramática final no tiene recursión izquierda inmediata ni
+indirecta. Desde \nt{Programa} y \nt{Resto} se llega a \nt{Regla},
+que empieza con \tk{WHEN}. La cadena \nt{Expr} $\to$ \nt{Termino}
+$\to$ \nt{Unaria} $\to$ \nt{Comparacion} termina en \tk{ID}, y las
+otras alternativas de \nt{Unaria} empiezan con \tk{NOT} o
+\tk{PARENT\_IZQ}. La vuelta de \nt{Unaria} a \nt{Expr} consume
+antes un paréntesis. Las colas consumen \tk{OR} o \tk{AND} antes de repetirse.
+
+\subsection{Factorización por la izquierda}
+
+La propuesta \nt{Programa} $\to$ \nt{Regla} \nt{Programa} $\mid$
+\nt{Regla} comparte el prefijo \nt{Regla}. Ambas alternativas
+tienen FIRST igual a \{\tk{WHEN}\} y chocarían en $M[\nt{Programa},
+\tk{WHEN}]$. Se factoriza como \nt{Programa} $\to$ \nt{Regla}
+\nt{Resto} y \nt{Resto} $\to$ \nt{Regla} \nt{Resto} $\mid$ $\varepsilon$.
+
+Escribir \nt{Comparacion} con tres alternativas, \tk{ID OP\_REL
+NUM}, \tk{ID OP\_REL TRUE} y \tk{ID OP\_REL FALSE}, también repite
+el prefijo. Se factoriza en \nt{Comparacion} $\to$ \tk{ID OP\_REL}
+\nt{Valor} y \nt{Valor} $\to$ \tk{NUM} $\mid$ \tk{TRUE} $\mid$
+\tk{FALSE}. La gramática final no necesita más factorización: las
+alternativas no vacías de cada no terminal con elección tienen
+FIRST disjuntos. Las tres alternativas de \nt{Unaria} empiezan con
+\tk{NOT}, \tk{PARENT\_IZQ} e \tk{ID}.
+
+\subsection{Ambigüedad y precedencia}
+
+Una gramática es ambigua si alguna cadena tiene dos árboles de
+derivación. La formulación plana \nt{Condicion} $\to$
+\nt{Condicion} \tk{AND} \nt{Condicion} $\mid$ \nt{Condicion}
+\tk{OR} \nt{Condicion} $\mid$ \nt{Comparacion} es ambigua: $a$
+\tk{OR} $b$ \tk{AND} $c$ puede leerse como $(a \;\tk{OR}\; b)
+\;\tk{AND}\; c$ o como $a \;\tk{OR}\; (b \;\tk{AND}\; c)$.
+Factorizar no resuelve esa elección.
+
+La gramática final separa los niveles. \nt{Expr} une términos con
+\tk{OR}, \nt{Termino} une unarias con \tk{AND} y \nt{Unaria}
+resuelve la negación, el grupo o la comparación. Por eso $a$
+\tk{OR} $b$ \tk{AND} $c$ se lee como $a \;\tk{OR}\; (b \;\tk{AND}\;
+c)$ y \tk{NOT} $a$ \tk{AND} $b$ se lee como $(\tk{NOT}\; a)
+\;\tk{AND}\; b$. Para el otro agrupamiento hay que escribir los
+paréntesis. \tk{NOT} se aplica a una sola \nt{Unaria}, así que
+negar una disyunción completa exige \tk{NOT \char40{}a OR b\char41{}}.
+
+Los SELECT de la sección~\ref{sec:ll1} son disjuntos para cada no
+terminal, es decir, la gramática es LL(1). Una gramática LL(1) no
+es ambigua, porque la derivación por la izquierda queda determinada
+por el no terminal pendiente y el token siguiente.
+
+\subsection{Efecto de la extensión}
+
+El núcleo del lenguaje usa \nt{Unaria} $\to$ \nt{Comparacion}. La
+extensión añade \nt{Unaria} $\to$ \tk{NOT} \nt{Unaria} y
+\nt{Unaria} $\to$ \tk{PARENT\_IZQ} \nt{Expr} \tk{PARENT\_DER}. Sus
+tokens iniciales son distintos de \tk{ID}, por lo que no crean
+conflictos FIRST/FIRST. FIRST de \nt{Unaria}, \nt{Termino} y
+\nt{Expr} pasa de \{\tk{ID}\} a \{\tk{ID}, \tk{NOT},
+\tk{PARENT\_IZQ}\}. El cierre del grupo agrega \tk{PARENT\_DER} a
+FOLLOW de \nt{Expr} y de los símbolos que pueden terminarla. La
+tabla recibe las entradas con \tk{NOT} y \tk{PARENT\_IZQ}, y las
+colas pueden derivar $\varepsilon$ ante \tk{PARENT\_DER}. No se
+permite una condición vacía entre paréntesis (caso I03).
+
+\section{FIRST y FOLLOW}
+
+FIRST$(\alpha)$ es el conjunto de terminales que pueden iniciar una
+cadena derivada de $\alpha$, e incluye $\varepsilon$ si $\alpha
+\Rightarrow^{*} \varepsilon$. FOLLOW$(A)$ es el conjunto de
+terminales que pueden aparecer justo después de $A$ en una forma
+sentencial. Nunca contiene $\varepsilon$ y siempre incluye \tk{\$}
+para el símbolo inicial. Para $A \to \alpha B \beta$, FOLLOW$(B)$
+recibe FIRST$(\beta) \setminus \{\varepsilon\}$, y también
+FOLLOW$(A)$ cuando $\beta$ puede derivar $\varepsilon$. Ambos
+cálculos se repiten hasta que los conjuntos dejan de cambiar.
+
+La tabla siguiente da cada conjunto con su origen. FIRST se obtiene
+desde los no terminales que empiezan con un terminal hacia los que
+los usan. FOLLOW se obtiene desde el símbolo inicial. Los números
+remiten a las producciones de la sección~\ref{sec:glc}.
+
+\begin{xltabular}{\textwidth}{l Y{0.8} Y{1.2}}
+  \toprule
+  \textbf{No terminal} & \textbf{FIRST y su origen}
+  & \textbf{FOLLOW y su origen}
+  \\
+  \midrule
+  \endhead
+  \nt{Programa}        & \tk{\{WHEN\}}. FIRST(\nt{Regla}) por 1;
+  \nt{Regla} no deriva $\varepsilon$.
+  & \tk{\{\$\}}. Símbolo inicial; no aparece en ningún lado
+  derecho.
+  \\
+  \nt{Resto}           & \tk{\{WHEN, ε\}}. FIRST(\nt{Regla}) por 2
+  y $\varepsilon$ por 3.
+  & \tk{\{\$\}}. Cierra la producción 1, así que hereda
+  FOLLOW(\nt{Programa}); en 2 se hereda a sí mismo.
+  \\
+  \nt{Regla}           & \tk{\{WHEN\}}. La producción 4 empieza con
+  \tk{WHEN}.
+  & \tk{\{WHEN, \$\}}. En 1 y 2 la sigue \nt{Resto}, que aporta
+  \tk{WHEN}; como \nt{Resto} deriva $\varepsilon$, se agregan
+  FOLLOW(\nt{Programa}) y FOLLOW(\nt{Resto}).               \\
+  \nt{Expr}            & \tk{\{ID, NOT, PARENT\_IZQ\}}.
+  FIRST(\nt{Termino}) por 5.
+  & \tk{\{THEN, PARENT\_DER\}}. La siguen \tk{THEN} en 4 y
+  \tk{PARENT\_DER} en 12.
+  \\
+  \nt{ColaOR}          & \tk{\{OR, ε\}}. \tk{OR} por 6 y
+  $\varepsilon$ por 7.
+  & \tk{\{THEN, PARENT\_DER\}}. Cierra la producción 5 y hereda
+  FOLLOW(\nt{Expr}); en 6 se hereda a sí misma.
+  \\
+  \nt{Termino}         & \tk{\{ID, NOT, PARENT\_IZQ\}}.
+  FIRST(\nt{Unaria}) por 8.
+  & \tk{\{OR, THEN, PARENT\_DER\}}. En 5 y 6 la sigue \nt{ColaOR},
+  que aporta \tk{OR}; como deriva $\varepsilon$, se agregan
+  FOLLOW(\nt{Expr}) y FOLLOW(\nt{ColaOR}).                 \\
+  \nt{ColaAND}         & \tk{\{AND, ε\}}. \tk{AND} por 9 y
+  $\varepsilon$ por 10.
+  & \tk{\{OR, THEN, PARENT\_DER\}}. Cierra la producción 8 y hereda
+  FOLLOW(\nt{Termino}).
+  \\
+  \nt{Unaria}          & \tk{\{ID, NOT, PARENT\_IZQ\}}. \tk{NOT}
+  por 11, \tk{PARENT\_IZQ} por 12 y FIRST(\nt{Comparacion}) por 13.
+  & \tk{\{AND, OR, THEN, PARENT\_DER\}}. En 8 y 9 la sigue
+  \nt{ColaAND}, que aporta \tk{AND}; como deriva $\varepsilon$, se
+  agregan FOLLOW(\nt{Termino}) y FOLLOW(\nt{ColaAND}).         \\
+  \nt{Comparacion}     & \tk{\{ID\}}. La producción 14 empieza con
+  \tk{ID}.
+  & \tk{\{AND, OR, THEN, PARENT\_DER\}}. Cierra la producción 13 y
+  hereda FOLLOW(\nt{Unaria}).
+  \\
+  \nt{Valor}           & \tk{\{NUM, TRUE, FALSE\}}. Primer símbolo
+  de 15, 16 y 17.
+  & \tk{\{AND, OR, THEN, PARENT\_DER\}}. Cierra la producción 14 y
+  hereda FOLLOW(\nt{Comparacion}).
+  \\
+  \nt{Accion}          & \tk{\{ID\}}. La producción 18 empieza con
+  \tk{ID}.
+  & \tk{\{PUNTO\_COMA\}}. La sigue \tk{PUNTO\_COMA} en 4.
+  \\
+  \bottomrule
+\end{xltabular}
+
+Estos conjuntos coinciden con el cálculo del módulo gramatical.
+Los archivos de apoyo incluyen también los SELECT y la tabla completa.
+
+\section{Tabla LL(1)}
+\label{sec:ll1}
+
+Para cada producción $A \to \alpha$, su número se escribe en $M[A,
+t]$ para todo $t \in \mathrm{FIRST}(\alpha) \setminus
+\{\varepsilon\}$. Si $\varepsilon \in \mathrm{FIRST}(\alpha)$,
+también se escribe para todo $t \in \mathrm{FOLLOW}(A)$. Ese conjunto
+de columnas es el SELECT de la producción.
+
+\begin{xltabular}{\textwidth}{r l l}
+  \toprule
+  \textbf{N.º} & \textbf{Producción} & \textbf{SELECT} \\
+  \midrule
+  \endhead
+  1 & \texttt{Programa → Regla Resto} & \texttt{\{WHEN\}} \\
+  2 & \texttt{Resto → Regla Resto} & \texttt{\{WHEN\}} \\
+  3 & \texttt{Resto → ε} & \texttt{\{\$\}} \\
+  4 & \texttt{Regla → WHEN Expr THEN Accion
+  PUNTO\_\allowbreak{}COMA} & \texttt{\{WHEN\}} \\
+  5 & \texttt{Expr → Termino ColaOR} & \texttt{\{ID, NOT,
+  PARENT\_\allowbreak{}IZQ\}} \\
+  6 & \texttt{ColaOR → OR Termino ColaOR} & \texttt{\{OR\}} \\
+  7 & \texttt{ColaOR → ε} & \texttt{\{PARENT\_\allowbreak{}DER, THEN\}} \\
+  8 & \texttt{Termino → Unaria ColaAND} & \texttt{\{ID, NOT,
+  PARENT\_\allowbreak{}IZQ\}} \\
+  9 & \texttt{ColaAND → AND Unaria ColaAND} & \texttt{\{AND\}} \\
+  10 & \texttt{ColaAND → ε} & \texttt{\{OR,
+  PARENT\_\allowbreak{}DER, THEN\}} \\
+  11 & \texttt{Unaria → NOT Unaria} & \texttt{\{NOT\}} \\
+  12 & \texttt{Unaria → PARENT\_\allowbreak{}IZQ Expr
+  PARENT\_\allowbreak{}DER} & \texttt{\{PARENT\_\allowbreak{}IZQ\}} \\
+  13 & \texttt{Unaria → Comparacion} & \texttt{\{ID\}} \\
+  14 & \texttt{Comparacion → ID OP\_\allowbreak{}REL Valor} &
+  \texttt{\{ID\}} \\
+  15 & \texttt{Valor → NUM} & \texttt{\{NUM\}} \\
+  16 & \texttt{Valor → TRUE} & \texttt{\{TRUE\}} \\
+  17 & \texttt{Valor → FALSE} & \texttt{\{FALSE\}} \\
+  18 & \texttt{Accion → ID ID} & \texttt{\{ID\}} \\
+  \bottomrule
+\end{xltabular}
+
+La tabla predictiva reúne esos números. Una celda vacía no tiene
+producción: si el parser llega a ella, informa un error sintáctico.
+Una celda con dos números sería un conflicto.
+
+\begin{center}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \resizebox{\textwidth}{!}{%
+    \begin{tabular}{lcccccccccccccc}
+      \toprule
+      & \rotatebox{90}{\texttt{WHEN}} &
+      \rotatebox{90}{\texttt{THEN}} & \rotatebox{90}{\texttt{OR}} &
+      \rotatebox{90}{\texttt{AND}} & \rotatebox{90}{\texttt{NOT}} &
+      \rotatebox{90}{\texttt{PARENT\_\allowbreak{}IZQ}} &
+      \rotatebox{90}{\texttt{PARENT\_\allowbreak{}DER}} &
+      \rotatebox{90}{\texttt{ID}} &
+      \rotatebox{90}{\texttt{OP\_\allowbreak{}REL}} &
+      \rotatebox{90}{\texttt{NUM}} & \rotatebox{90}{\texttt{TRUE}}
+      & \rotatebox{90}{\texttt{FALSE}} &
+      \rotatebox{90}{\texttt{PUNTO\_\allowbreak{}COMA}} &
+      \rotatebox{90}{\texttt{\$}} \\
+      \midrule
+      \texttt{Programa} & 1 &  &  &  &  &  &  &  &  &  &  &  &  &  \\
+      \texttt{Resto} & 2 &  &  &  &  &  &  &  &  &  &  &  &  & 3 \\
+      \texttt{Regla} & 4 &  &  &  &  &  &  &  &  &  &  &  &  &  \\
+      \texttt{Expr} &  &  &  &  & 5 & 5 &  & 5 &  &  &  &  &  &  \\
+      \texttt{ColaOR} &  & 7 & 6 &  &  &  & 7 &  &  &  &  &  &  &  \\
+      \texttt{Termino} &  &  &  &  & 8 & 8 &  & 8 &  &  &  &  &  &  \\
+      \texttt{ColaAND} &  & 10 & 10 & 9 &  &  & 10 &  &  &  &  &  &  &  \\
+      \texttt{Unaria} &  &  &  &  & 11 & 12 &  & 13 &  &  &  &  &  &  \\
+      \texttt{Comparacion} &  &  &  &  &  &  &  & 14 &  &  &  &  &  &  \\
+      \texttt{Valor} &  &  &  &  &  &  &  &  &  & 15 & 16 & 17 &  &  \\
+      \texttt{Accion} &  &  &  &  &  &  &  & 18 &  &  &  &  &  &  \\
+      \bottomrule
+    \end{tabular}
+  }
+\end{center}
+
+Hay 25 celdas ocupadas de 154 y ningún conflicto. En los tres no
+terminales anulables los SELECT son disjuntos. Para \nt{Resto},
+\tk{WHEN} elige la repetición y \tk{\$} elige $\varepsilon$. Para
+\nt{ColaOR}, \tk{OR} elige la cola y \{\tk{THEN},
+\tk{PARENT\_DER}\} elige $\varepsilon$. Para \nt{ColaAND}, \tk{AND}
+elige la cola y \{\tk{OR}, \tk{THEN}, \tk{PARENT\_DER}\} elige
+$\varepsilon$. Los otros puntos de elección son \nt{Unaria}, con
+\tk{NOT}, \tk{PARENT\_IZQ} e \tk{ID}, y \nt{Valor}, con \tk{NUM},
+\tk{TRUE} y \tk{FALSE}. No hay conflictos FIRST/FIRST ni
+FIRST/FOLLOW, así que la gramática es LL(1) y no requiere más
+cambios después de las transformaciones de la sección~\ref{sec:analisis}.
+
+Las celdas vacías explican los rechazos. En I01 falta un valor y la
+fila \nt{Valor} no tiene producción para \tk{THEN}. En I02 falta
+una condición después de \tk{AND}: la fila \nt{Unaria} tampoco
+tiene producción para \tk{THEN}.
+
+\section{Diseño e implementación del parser}
+
+\subsection{Módulos}
+
+El parser está escrito en Python con la biblioteca estándar, sin
+generadores de parsers.
+
+\begin{itemize}
+  \item \texttt{agroreglas/lexer.py} convierte el texto en tokens.
+  \item \texttt{agroreglas/gramatica.py} calcula FIRST, FOLLOW,
+    SELECT, la tabla y las propiedades de la gramática a partir de
+    \texttt{especificacion/gramatica.json}.
+  \item \texttt{agroreglas/parser.py} reconoce la entrada con la
+    tabla y construye el AST.
+  \item \texttt{agroreglas/arbol.py} muestra el AST como árbol de texto.
+  \item \texttt{agroreglas/\_\_main\_\_.py} ejecuta el análisis
+    desde un archivo o un texto.
+  \item \texttt{herramientas/} contiene el verificador de la
+    gramática, la demostración y el generador de evidencia.
+\end{itemize}
+
+\texttt{analizar\_programa\char40{}fuente\char41{}} une el lexer y el parser y
+devuelve el AST. Lanza \texttt{ErrorLexico} o
+\texttt{ErrorSintactico}, ambos subclases de \texttt{ValueError}.
+
+\subsection{Lexer}
+
+\texttt{agroreglas/lexer.py} reproduce la función
+\texttt{analizador\_lexico} de \texttt{anlizador\_lexico1.ipynb}
+con las mismas expresiones regulares, el mismo orden de categorías
+y las mismas palabras reservadas. La diferencia es el error: un
+carácter ajeno al alfabeto lanza \texttt{ErrorLexico}, subclase de
+\texttt{ValueError} que informa el desplazamiento, la línea y la
+columna, en lugar de un \texttt{ValueError} con solo el símbolo. El
+lexer no entrega posiciones, así que el parser las reconstruye
+recorriendo el texto original (sección~\ref{sec:errores}). El
+notebook se conserva como referencia.
+
+\subsection{Reconocimiento con tabla y pila}
+
+El parser usa una pila de símbolos que empieza con \tk{\$} y
+\nt{Programa}, con \nt{Programa} en la cima. En cada paso mira el
+tipo del token actual:
+
+\begin{itemize}
+  \item Si la cima es un terminal, debe coincidir con el token, que
+    se consume.
+  \item Si la cima es un no terminal $A$, consulta $M[A, t]$ y
+    reemplaza $A$ por el lado derecho de esa producción, apilado en
+    orden inverso. Una producción vacía no apila símbolos.
+  \item Si la celda está vacía o el terminal no coincide, informa
+    el primer error y se detiene.
+\end{itemize}
+
+Acepta cuando la cima \tk{\$} coincide con el fin de entrada. No
+hay retroceso ni recuperación de errores, y una entrada vacía o con
+tokens sobrantes se rechaza. Cada expansión deja además una marca
+con el no terminal y su cantidad de hijos. Una segunda pila guarda
+los tokens reconocidos y los valores construidos. Cuando la cima es
+una marca, retira sus hijos, aplica la acción del no terminal y
+apila el resultado, de modo que el mismo recorrido reconoce la
+entrada y construye el AST. El análisis no usa recursión de
+funciones: una prueba con 1100 paréntesis anidados lo confirma.
+
+\subsection{Relación entre la gramática, la tabla y el código}
+
+El parser carga \texttt{especificacion/gramatica.json}, calcula la
+tabla con \texttt{agroreglas/gramatica.py} y se niega a iniciar si
+hay conflictos LL(1) o recursión izquierda. Las acciones que
+construyen el AST están en \texttt{\_reducir}, una por no terminal
+y en el orden de las producciones.
+
+\texttt{herramientas/validar\_gramatica.py} usa ese mismo módulo de
+cálculo. Por eso no es una verificación independiente de la teoría.
+Comprueba que la tabla publicada en
+\texttt{docs/first\_follow\_tabla.txt} coincide con la gramática
+actual y que no hay conflictos, recursión izquierda ni símbolos
+inaccesibles o improductivos. Sus autocontroles usan gramáticas
+pequeñas de resultado conocido, con un conflicto FIRST/FIRST, uno
+FIRST/FOLLOW y recursión izquierda indirecta. Esos controles y las
+pruebas detectan errores de implementación. Las secciones 4 a 6
+justifican los conjuntos y la tabla mediante las producciones y
+las reglas de cálculo.
+
+\subsection{Traza de V01}
+
+La traza muestra la pila con la cima a la derecha, los lexemas
+pendientes y la acción: la producción $M[A, t]$ cuando la cima es
+un no terminal, o si el terminal coincide. Las marcas del AST no
+aparecen, porque no son símbolos de la gramática. Las colas
+\nt{ColaAND} y \nt{ColaOR} derivan $\varepsilon$ ante \tk{THEN}, y
+\nt{Resto} lo hace ante el fin de entrada.
+
+\begingroup
+\footnotesize
+\begin{xltabular}{\textwidth}{r Y{1.3} Y{0.9} Y{0.8}}
+  \toprule
+  \textbf{Paso} & \textbf{Pila} & \textbf{Entrada} & \textbf{Acción} \\
+  \midrule
+  \endhead
+  1 & \texttt{\$ Programa} & \texttt{WHEN humedad < 30 THEN abrir
+  valvula ; \$} & 1: Programa → Regla Resto \\
+  2 & \texttt{\$ Resto Regla} & \texttt{WHEN humedad < 30 THEN
+  abrir valvula ; \$} & 4: Regla → WHEN Expr THEN Accion PUNTO\_COMA \\
+  3 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN Expr
+  WHEN} & \texttt{WHEN humedad < 30 THEN abrir valvula ; \$} &
+  coincide WHEN \\
+  4 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN Expr}
+  & \texttt{humedad < 30 THEN abrir valvula ; \$} & 5: Expr →
+  Termino ColaOR \\
+  5 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR Termino} & \texttt{humedad < 30 THEN abrir valvula ; \$}
+  & 8: Termino → Unaria ColaAND \\
+  6 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR ColaAND Unaria} & \texttt{humedad < 30 THEN abrir
+  valvula ; \$} & 13: Unaria → Comparacion \\
+  7 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR ColaAND Comparacion} & \texttt{humedad < 30 THEN abrir
+  valvula ; \$} & 14: Comparacion → ID OP\_REL Valor \\
+  8 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR ColaAND Valor OP\_\allowbreak{}REL ID} & \texttt{humedad
+  < 30 THEN abrir valvula ; \$} & coincide ID \\
+  9 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR ColaAND Valor OP\_\allowbreak{}REL} & \texttt{< 30 THEN
+  abrir valvula ; \$} & coincide OP\_REL \\
+  10 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR ColaAND Valor} & \texttt{30 THEN abrir valvula ; \$} &
+  15: Valor → NUM \\
+  11 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR ColaAND NUM} & \texttt{30 THEN abrir valvula ; \$} &
+  coincide NUM \\
+  12 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR ColaAND} & \texttt{THEN abrir valvula ; \$} & 10: ColaAND → ε \\
+  13 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR} & \texttt{THEN abrir valvula ; \$} & 7: ColaOR → ε \\
+  14 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN} &
+  \texttt{THEN abrir valvula ; \$} & coincide THEN \\
+  15 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion} &
+  \texttt{abrir valvula ; \$} & 18: Accion → ID ID \\
+  16 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA ID ID} &
+  \texttt{abrir valvula ; \$} & coincide ID \\
+  17 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA ID} &
+  \texttt{valvula ; \$} & coincide ID \\
+  18 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA} & \texttt{; \$}
+  & coincide PUNTO\_COMA \\
+  19 & \texttt{\$ Resto} & \texttt{\$} & 3: Resto → ε \\
+  20 & \texttt{\$} & \texttt{\$} & aceptar \\
+  \bottomrule
+\end{xltabular}
+\endgroup
+
+\section{Árbol sintáctico y AST}
+
+El parser construye un AST como diccionarios de Python,
+serializable a JSON. Los nodos son:
+
+\begin{itemize}
+  \item \texttt{Programa}: lista ordenada de reglas.
+  \item \texttt{Regla}: condición y acción.
+  \item \texttt{Comparacion}: identificador, operador relacional y valor.
+  \item \texttt{Numero}: literal tal como se escribió, como texto.
+  \item \texttt{Booleano}: valor \tk{TRUE} o \tk{FALSE}.
+  \item \texttt{Logica}: operador \tk{AND} u \tk{OR} con operandos
+    izquierdo y derecho.
+  \item \texttt{Negacion}: operando de \tk{NOT}.
+  \item \texttt{Accion}: verbo y destino.
+\end{itemize}
+
+Las producciones 1 a 3 reúnen las reglas, la 4 crea \texttt{Regla},
+y de la 5 a la 10 se acumulan las operaciones lógicas. La 11 crea
+la negación, la 12 devuelve el AST de la expresión interior y la 13
+pasa la comparación. La 14 crea \texttt{Comparacion}, de la 15 a la
+17 se crea el valor y la 18 crea \texttt{Accion}. Los paréntesis no
+son nodos, porque el grupo ya queda expresado en la estructura.
+Cada cola se recorre de izquierda a derecha, de modo que \tk{AND} y
+\tk{OR} asocian a la izquierda aunque la gramática use colas
+recursivas por la derecha. El AST es sintáctico, por lo que el
+número se guarda como texto.
+
+El caso V03 muestra la precedencia sin paréntesis. \tk{AND} se
+agrupa primero y \tk{OR} queda en la raíz:
+
+\begin{Verbatim}
+Programa
+  Regla
+    OR
+      AND
+        Comparacion temperatura >=
+          Numero 28
+        Comparacion humedad <=
+          Numero 40
+      Comparacion emergencia ==
+        Booleano TRUE
+    Accion activar alarma
+\end{Verbatim}
+
+El caso V04 muestra la negación sobre un grupo, con \tk{AND} como
+raíz de la condición:
+
+\begin{Verbatim}
+Programa
+  Regla
+    AND
+      NOT
+        OR
+          Comparacion lluvia ==
+            Booleano TRUE
+          Comparacion humedad >
+            Numero 60
+      Comparacion nivel !=
+        Numero 0
+    Accion encender bomba
+\end{Verbatim}
+
+Los AST completos en JSON están en
+\texttt{ejemplos/arbol\_v03.json} y
+\texttt{ejemplos/arbol\_v04.json}, y sus versiones de texto en los
+archivos \texttt{.txt} equivalentes. \texttt{formatear\_arbol} de
+\texttt{agroreglas/arbol.py} los genera con un recorrido iterativo.
+
+\section{Manejo de errores}
+\label{sec:errores}
+
+El parser informa el primer error y se detiene. Cada mensaje indica
+la causa, el lexema encontrado, la línea, la columna y el
+desplazamiento. La línea y la columna parten de 1 y el
+desplazamiento de 0, contados en caracteres. Un tabulador cuenta
+como un carácter. El fin de entrada se ubica justo después del
+último token, sin contar los espacios finales, y una entrada sin
+tokens se ubica en 1:1.
+
+Los tipos esperados salen de la fila de la tabla: son las columnas
+ocupadas de esa fila, o el terminal obligatorio si el error es una
+discordancia. FOLLOW reúne todos los contextos de un no terminal,
+así que el parser descarta el cierre de grupo cuando no hay un
+grupo abierto y descarta \tk{THEN} cuando sí lo hay. Esa distinción
+separa I04 de I10:
+
+\begin{itemize}
+  \item En I04, \texttt{WHEN \char40{}humedad < 30 THEN ...}, el grupo está
+    abierto. Ante \tk{THEN}, las colas internas pueden derivar
+    $\varepsilon$ porque \tk{THEN} está en su FOLLOW, pero el
+    terminal obligatorio que sigue es \tk{PARENT\_DER}. El error
+    se detecta al cotejarlo con \tk{THEN} y el mensaje pide cerrar el grupo.
+  \item En I10, \texttt{WHEN humedad < 30\char41{} THEN ...}, no hay un grupo
+    abierto. Ante \tk{\char41{}}, la cola cierra con $\varepsilon$ y el
+    terminal pendiente es \tk{THEN}. El mensaje pide \tk{THEN} y no
+    sugiere cerrar un grupo inexistente.
+\end{itemize}
+
+\texttt{ErrorSintactico} conserva el token, el símbolo pendiente y
+los tipos esperados, y \texttt{como\_dict} los entrega para las
+pruebas. Un carácter desconocido lanza \texttt{ErrorLexico}, con la
+ubicación calculada igual (caso L05). La tabla de la
+sección~\ref{sec:casos} reúne el mensaje de cada caso.
+
+La línea de comandos añade la línea del programa con un
+\tk{\textasciicircum{}} bajo la columna del error. Antes de analizar,
+descarta el BOM inicial y convierte CRLF y CR en LF, porque el lexer
+solo admite LF. El código de salida es 0 al aceptar, 1 al rechazar y
+2 si el archivo no se puede leer. Para \texttt{ejemplos/error.agro},
+que deja sin cerrar el paréntesis de la segunda línea:
+
+\begin{Verbatim}
+RECHAZADO. Error sintáctico en línea 3, columna 2 (desplazamiento 77): se esperaba ')' para cerrar el grupo; se encontró 'THEN'.
+    THEN desplegar malla;
+    ^
+\end{Verbatim}
+
+\section{Casos de prueba}
+\label{sec:casos}
+
+\texttt{especificacion/casos.json} reúne 25 entradas: 10 válidas (V01
+a V10), 10 inválidas (I01 a I10) y 5 casos límite (L01 a L05).
+Declara el resultado esperado de cada una y, para cada rechazo, la
+etapa, la ubicación, el token encontrado y los tipos esperados. Las
+válidas V06 a V10 cubren cadenas de tres \tk{AND} y de tres \tk{OR},
+\tk{NOT} sin paréntesis, dos grupos y un programa de tres reglas. Las
+inválidas I06 a I10 fallan en filas o terminales distintos de I01 a
+I05. Los casos límite prueban los bordes del lenguaje: entrada sin
+reglas, mayúsculas y minúsculas, negación triple con paréntesis
+redundantes, identificadores que empiezan con palabras reservadas,
+ceros a la izquierda y un decimal que el lexer rechaza.
+
+La columna «Obtenido» es la salida del analizador: la decisión y, en
+un rechazo, la ubicación (línea:columna) y el mensaje.
+
+\begingroup
+\footnotesize
+\begin{xltabular}{\textwidth}{l Y{1.0} l Y{1.3} Y{0.7}}
+  \toprule
+  \textbf{ID} & \textbf{Entrada} & \textbf{Esperado} &
+  \textbf{Obtenido} & \textbf{Observación} \\
+  \midrule
+  \endhead
+  V01 & \texttt{WHEN humedad < 30 THEN abrir valvula;} & Acepta &
+  Acepta & Regla mínima numérica \\
+  V02 & \texttt{WHEN lluvia == FALSE THEN activar riego;} & Acepta &
+  Acepta & Valor booleano \\
+  V03 & \texttt{WHEN temperatura >= 28 AND humedad <= 40 OR
+  emergencia == TRUE THEN activar alarma;} & Acepta & Acepta &
+  Precedencia AND sobre OR \\
+  V04 & \texttt{WHEN NOT \char40{}lluvia == TRUE OR humedad >
+    60\char41{} AND nivel
+  != 0 THEN encender bomba;} & Acepta & Acepta & Negación y agrupación \\
+  V05 & \texttt{WHEN NOT NOT \char40{}humedad < 30 AND
+    \char40{}lluvia == FALSE OR
+    reserva > 0\char41{}\char41{} THEN abrir valvula; WHEN nivel == 0
+    THEN apagar
+  bomba;} & Acepta & Acepta & Negación repetida, anidamiento y
+  varias reglas \\
+  V06 & \texttt{WHEN temperatura > 35 AND radiacion >= 800 AND viento
+  <= 20 THEN desplegar malla;} & Acepta & Acepta & AND encadenado con
+  asociación izquierda \\
+  V07 & \texttt{WHEN plaga == TRUE OR hongo == TRUE OR humedad > 85
+  THEN notificar agronomo;} & Acepta & Acepta & OR encadenado con
+  valores booleanos y numéricos \\
+  V08 & \texttt{WHEN NOT helada == TRUE AND temperatura > 2 THEN
+  abrir invernadero;} & Acepta & Acepta & NOT sin paréntesis niega
+  solo la primera comparación \\
+  V09 & \texttt{WHEN \char40{}ph < 5 OR ph > 8\char41{} AND
+    \char40{}riego\_\allowbreak{}activo == FALSE\char41{} THEN corregir
+  ph;} & Acepta &
+  Acepta & Dos grupos, uno con una sola comparación \\
+  V10 & \texttt{WHEN hora == 6 THEN iniciar
+    riego;\textbackslash{}nWHEN hora == 8 THEN detener
+  riego;\textbackslash{}nWHEN tanque < 10 THEN llenar tanque;} &
+  Acepta & Acepta & Tres reglas en líneas distintas \\
+  I01 & \texttt{WHEN humedad < THEN abrir valvula;} & Rechaza &
+  Rechaza en 1:16. Se esperaba un número, TRUE o FALSE; se encontró
+  \texttt{THEN}. & Falta el valor después del operador relacional \\
+  I02 & \texttt{WHEN humedad < 30 AND THEN abrir valvula;} & Rechaza
+  & Rechaza en 1:23. Se esperaba un identificador, \texttt{\char40{}} o NOT;
+  se encontró \texttt{THEN}. & Falta la condición después de AND \\
+  I03 & \texttt{WHEN \char40{}\char41{} THEN abrir valvula;} &
+  Rechaza & Rechaza en
+  1:7. Se esperaba un identificador, \texttt{\char40{}} o NOT; se encontró
+  \texttt{\char41{}}. & Grupo vacío \\
+  I04 & \texttt{WHEN \char40{}humedad < 30 THEN abrir valvula;} & Rechaza &
+  Rechaza en 1:20. Se esperaba \texttt{\char41{}} para cerrar el grupo; se
+  encontró \texttt{THEN}. & Falta el paréntesis de cierre \\
+  I05 & \texttt{WHEN humedad < 30 THEN abrir valvula} & Rechaza &
+  Rechaza en 1:37. Se esperaba \texttt{;} al final de la regla; se
+  encontró fin de entrada. & Falta el punto y coma final \\
+  I06 & \texttt{WHEN humedad 30 THEN abrir valvula;} & Rechaza &
+  Rechaza en 1:14. Se esperaba un operador relacional \texttt{\char40{}>,
+  <, >=, <=, ==, !=\char41{}}; se encontró \texttt{30}. & Falta el operador
+  relacional \\
+  I07 & \texttt{WHEN humedad < 30 abrir valvula;} & Rechaza &
+  Rechaza en 1:19. Se esperaba THEN, AND o OR; se encontró
+  \texttt{abrir}. & Falta THEN entre la condición y la acción \\
+  I08 & \texttt{WHEN humedad < 30 THEN abrir;} & Rechaza & Rechaza
+  en 1:29. Se esperaba un identificador; se encontró \texttt{;}. &
+  Acción incompleta: falta el destino \\
+  I09 & \texttt{humedad < 30 THEN abrir valvula;} & Rechaza &
+  Rechaza en 1:1. Se esperaba WHEN; se encontró \texttt{humedad}. &
+  La regla no comienza con WHEN \\
+  I10 & \texttt{WHEN humedad < 30\char41{} THEN abrir valvula;} & Rechaza &
+  Rechaza en 1:18. Se esperaba THEN; se encontró \texttt{\char41{}}. &
+  Paréntesis de cierre sin apertura \\
+  L01 & \textvisiblespace{}\textbackslash{}n\textbackslash{}t & Rechaza
+  & Rechaza en 1:1. Se esperaba WHEN; se encontró fin de entrada. &
+  Entrada sin reglas, solo espacios \\
+  L02 & \texttt{when Humedad < 30 then Abrir Valvula;} & Acepta &
+  Acepta & Palabras reservadas en minúsculas y nombres con mayúsculas \\
+  L03 & \texttt{WHEN NOT NOT NOT
+    \char40{}\char40{}\char40{}\char40{}nivel ==
+  0\char41{}\char41{}\char41{}\char41{} THEN apagar bomba;}
+  & Acepta & Acepta & Negación triple y cuatro paréntesis redundantes \\
+  L04 & \texttt{WHEN WHEN\_\allowbreak{}sensor >= 007 AND
+  not\_\allowbreak{}listo == 0 THEN abrir valvula;} & Acepta & Acepta &
+  Identificadores que empiezan con palabras reservadas y ceros a la izquierda \\
+  L05 & \texttt{WHEN humedad < 3.5 THEN abrir valvula;} & Rechaza &
+  Rechaza en 1:17 (error léxico). Símbolo no reconocido \texttt{.}. &
+  Número decimal: el punto no pertenece al alfabeto \\
+  \bottomrule
+\end{xltabular}
+\endgroup
+
+Las pruebas se ejecutan con:
+
+\begin{Verbatim}
+python -m unittest discover -s pruebas -v
+python herramientas/validar_gramatica.py
+\end{Verbatim}
+
+\texttt{pruebas/test\_casos.py} recorre los 25 casos. Para cada uno
+compara el resultado con el esperado y, en un rechazo, la etapa, la
+ubicación, el token y los tipos esperados. En V01 a V05 e I01 a I05
+compara además los tokens con los publicados.
+\texttt{pruebas/test\_parser.py} compara el AST completo de V01 a V05
+con estructuras esperadas y comprueba la asociación izquierda, la
+entrada vacía, el texto sobrante y la ubicación en varias líneas.
+También hay pruebas de la línea de comandos con texto, archivo, CRLF,
+BOM, error léxico y archivo inexistente. Los 25 casos obtienen el
+resultado esperado y toda la suite pasa.
+
+\section{Conclusiones}
+
+AgroReglas cumple los mínimos del enunciado y la extensión de
+negación y agrupación está en la gramática, la tabla, el parser y las
+pruebas. La gramática final no tiene recursión izquierda ni prefijos
+comunes. Su tabla predictiva tiene 25 celdas ocupadas y ningún
+conflicto, por lo que el parser decide cada paso con un token de
+anticipación y sin retroceso.
+
+El parser usa una pila explícita, construye el AST en el mismo
+recorrido y respeta la precedencia y la asociación a la izquierda.
+Cada rechazo informa la línea, la columna, el token encontrado y lo
+que se esperaba.
+
+El parser carga la tabla que calcula el mismo módulo que usa el
+verificador. La coincidencia entre ambos detecta cambios que no se
+propagan, no valida la teoría. Las secciones 4 a 6 justifican los
+conjuntos y la tabla mediante las producciones y las reglas de cálculo.
+
+El lenguaje tiene límites claros. Solo comprueba sintaxis: no evalúa
+condiciones, no verifica que los sensores o dispositivos existan y
+acepta \texttt{temperatura > TRUE}. Por el patrón de \tk{NUM} del
+lexer entregado, no admite negativos ni decimales. Una etapa
+semántica sobre el AST podría validar tipos y vocabulario, y ampliar
+\tk{NUM} no cambiaría la gramática, porque \nt{Valor} $\to$ \tk{NUM}
+no depende de la forma del número.
+
+\appendix
+\section{Código fuente y repositorio}
+
+El repositorio GitHub contiene el código fuente, la especificación,
+las pruebas, el README, los archivos auxiliares y este informe:
 
 \url{\repositorio}
 
-El README indica los requisitos, el formato de entrada y los comandos de ejecución.
+El README indica los requisitos, el formato de entrada y los
+comandos. Para reproducir las salidas y las tablas:
 
-\section*{B. Demostración funcional}
-\addcontentsline{toc}{section}{B. Demostración funcional}
+\begin{Verbatim}
+python -m unittest discover -s pruebas -v
+python herramientas/validar_gramatica.py
+python -m herramientas.evidencia_parser
+\end{Verbatim}
 
-Las capturas muestran páginas generadas por \texttt{python -m herramientas.evidencia\_parser} con la salida real de Python.
+\section{Demostración funcional}
 
-\begin{figure}[!htbp]
-  \centering
-  \includegraphics[width=0.8\textwidth]{../docs/evidencias/cli.png}
-  \caption{Ejecución desde archivo y desde texto: un programa aceptado con su AST, un error sintáctico en la tercera línea y un error léxico.}
-\end{figure}
+Las capturas muestran ejecuciones del analizador y de las herramientas
+de verificación con entradas de ejemplo.
 
-\begin{figure}[!htbp]
-  \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/arbol.png}
-  \caption{AST del caso V04, con la negación sobre el grupo y el AND como raíz de la condición.}
-\end{figure}
+\captura{terminal-aceptación.png}{1}{Programa con negación y agrupación
+aceptado mediante \texttt{--texto}, con su AST.}
+\captura{terminal-errores.png}{1}{Rechazo sintáctico dentro de un grupo
+y error léxico de un decimal, mediante \texttt{--texto}.}
+\captura{terminal-pruebas.png}{1}{Pruebas automatizadas y verificación
+de la gramática.}
 
-\begin{figure}[!htbp]
-  \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-v01.png}
-  \caption{Casos válidos V01 a V05: los cinco se aceptan.}
-\end{figure}
+\section{Traza de I04}
 
-\begin{figure}[!htbp]
-  \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-i01.png}
-  \caption{Casos inválidos I01 a I05, con el mensaje completo de cada rechazo.}
-\end{figure}
+I04 es \texttt{WHEN \char40{}humedad < 30 THEN abrir valvula;}. El grupo
+abierto apila \tk{PARENT\_DER}. Ante \tk{THEN}, las colas internas se
+cierran con $\varepsilon$ y el error aparece al cotejar
+\tk{PARENT\_DER} con \tk{THEN}.
 
-\begin{figure}[!htbp]
-  \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-v06.png}
-  \caption{Casos válidos V06 a V10: los cinco se aceptan.}
-\end{figure}
-
-\begin{figure}[!htbp]
-  \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-i06.png}
-  \caption{Casos inválidos I06 a I10, con el mensaje completo de cada rechazo.}
-\end{figure}
-
-\begin{figure}[!htbp]
-  \centering
-  \includegraphics[width=\textwidth]{../docs/evidencias/ejecucion-l01.png}
-  \caption{Casos límite L01 a L05: se aceptan L02, L03 y L04, y se rechazan L01 y L05.}
-\end{figure}
+\begingroup
+\footnotesize
+\begin{xltabular}{\textwidth}{r Y{1.3} Y{0.9} Y{0.8}}
+  \toprule
+  \textbf{Paso} & \textbf{Pila} & \textbf{Entrada} & \textbf{Acción} \\
+  \midrule
+  \endhead
+  1 & \texttt{\$ Programa} & \texttt{WHEN \char40{} humedad < 30 THEN abrir
+  valvula ; \$} & 1: Programa → Regla Resto \\
+  2 & \texttt{\$ Resto Regla} & \texttt{WHEN \char40{} humedad < 30 THEN
+  abrir valvula ; \$} & 4: Regla → WHEN Expr THEN Accion PUNTO\_COMA \\
+  3 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  Expr WHEN} & \texttt{WHEN \char40{} humedad < 30 THEN abrir valvula ;
+  \$} & coincide WHEN \\
+  4 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  Expr} & \texttt{\char40{} humedad < 30 THEN abrir valvula ; \$} &
+  5: Expr → Termino ColaOR \\
+  5 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion THEN
+  ColaOR Termino} & \texttt{\char40{} humedad < 30 THEN abrir
+  valvula ; \$} & 8: Termino → Unaria ColaAND \\
+  6 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion
+  THEN ColaOR ColaAND Unaria} & \texttt{\char40{} humedad < 30
+  THEN abrir valvula ; \$} & 12: Unaria → PARENT\_IZQ
+  Expr PARENT\_DER \\
+  7 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA Accion
+    THEN ColaOR ColaAND PARENT\_\allowbreak{}DER Expr
+  PARENT\_\allowbreak{}IZQ} & \texttt{\char40{} humedad < 30
+  THEN abrir valvula ; \$} & coincide PARENT\_IZQ \\
+  8 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  Expr} & \texttt{humedad < 30 THEN abrir valvula ;
+  \$} & 5: Expr → Termino ColaOR \\
+  9 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR Termino} & \texttt{humedad < 30 THEN abrir
+  valvula ; \$} & 8: Termino → Unaria ColaAND \\
+  10 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR ColaAND Unaria} & \texttt{humedad < 30 THEN
+  abrir valvula ; \$} & 13: Unaria → Comparacion \\
+  11 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR ColaAND Comparacion} & \texttt{humedad < 30
+  THEN abrir valvula ; \$} & 14: Comparacion → ID
+  OP\_REL Valor \\
+  12 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR ColaAND Valor OP\_\allowbreak{}REL ID} &
+  \texttt{humedad < 30 THEN abrir valvula ; \$} & coincide ID \\
+  13 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR ColaAND Valor OP\_\allowbreak{}REL} &
+  \texttt{< 30 THEN abrir valvula ; \$} & coincide OP\_REL \\
+  14 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR ColaAND Valor} & \texttt{30 THEN abrir
+  valvula ; \$} & 15: Valor → NUM \\
+  15 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR ColaAND NUM} & \texttt{30 THEN abrir valvula
+  ; \$} & coincide NUM \\
+  16 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR ColaAND} & \texttt{THEN abrir valvula ; \$}
+  & 10: ColaAND → ε \\
+  17 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND PARENT\_\allowbreak{}DER
+  ColaOR} & \texttt{THEN abrir valvula ; \$} & 7: ColaOR → ε \\
+  18 & \texttt{\$ Resto PUNTO\_\allowbreak{}COMA
+    Accion THEN ColaOR ColaAND
+  PARENT\_\allowbreak{}DER} & \texttt{THEN abrir
+  valvula ; \$} & error: se esperaba PARENT\_DER \\
+  \bottomrule
+\end{xltabular}
+\endgroup
 
 \end{document}

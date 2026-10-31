@@ -12,6 +12,7 @@ test_booleanos_del_arbol_en_mayusculas (test_parser.PruebasParser.test_booleanos
 test_contrato_tokens_y_fuente (test_parser.PruebasParser.test_contrato_tokens_y_fuente) ... ok
 test_entrada_vacia_y_texto_sobrante (test_parser.PruebasParser.test_entrada_vacia_y_texto_sobrante) ... ok
 test_eof_tras_espacios (test_parser.PruebasParser.test_eof_tras_espacios) ... ok
+test_esperados_respetan_el_grupo_pendiente (test_parser.PruebasParser.test_esperados_respetan_el_grupo_pendiente) ... ok
 test_i07_no_sugiere_cerrar_grupo_inexistente (test_parser.PruebasParser.test_i07_no_sugiere_cerrar_grupo_inexistente) ... ok
 test_mensajes_legibles_y_orden_de_valores (test_parser.PruebasParser.test_mensajes_legibles_y_orden_de_valores) ... ok
 test_numero_conserva_el_literal_sin_limite_de_digitos (test_parser.PruebasParser.test_numero_conserva_el_literal_sin_limite_de_digitos) ... ok
@@ -24,6 +25,6 @@ test_v04_negacion_y_grupo (test_parser.PruebasParser.test_v04_negacion_y_grupo) 
 test_v05_anidamiento_y_varias_reglas (test_parser.PruebasParser.test_v05_anidamiento_y_varias_reglas) ... ok
 
 ----------------------------------------------------------------------
-Ran 24 tests in 0.060s
+Ran 25 tests in 0.063s
 
 OK
