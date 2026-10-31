@@ -824,7 +824,9 @@ solo admite LF. El código de salida es 0 al aceptar, 1 al rechazar y
 que deja sin cerrar el paréntesis de la segunda línea:
 
 \begin{Verbatim}
-RECHAZADO. Error sintáctico en línea 3, columna 2 (desplazamiento 77): se esperaba ')' para cerrar el grupo; se encontró 'THEN'.
+RECHAZADO. Error sintáctico en línea 3, columna 2
+(desplazamiento 77): se esperaba ')' para cerrar el grupo;
+se encontró 'THEN'.
     THEN desplegar malla;
     ^
 \end{Verbatim}
@@ -834,8 +836,10 @@ RECHAZADO. Error sintáctico en línea 3, columna 2 (desplazamiento 77): se espe
 
 \texttt{especificacion/casos.json} reúne 25 entradas: 10 válidas (V01
 a V10), 10 inválidas (I01 a I10) y 5 casos límite (L01 a L05).
-Declara el resultado esperado de cada una y, para cada rechazo, la
-etapa, la ubicación, el token encontrado y los tipos esperados. Las
+Declara el resultado esperado de cada una y, para cada rechazo
+sintáctico, la etapa, la ubicación, el token encontrado y los tipos
+esperados. En el rechazo léxico L05 declara la etapa, el lexema y su
+ubicación. Las
 válidas V06 a V10 cubren cadenas de tres \tk{AND} y de tres \tk{OR},
 \tk{NOT} sin paréntesis, dos grupos y un programa de tres reglas. Las
 inválidas I06 a I10 fallan en filas o terminales distintos de I01 a
@@ -884,9 +888,9 @@ un rechazo, la ubicación (línea:columna) y el mensaje.
     \char40{}riego\_\allowbreak{}activo == FALSE\char41{} THEN corregir
   ph;} & Acepta &
   Acepta & Dos grupos, uno con una sola comparación \\
-  V10 & \texttt{WHEN hora == 6 THEN iniciar
-    riego;\textbackslash{}nWHEN hora == 8 THEN detener
-  riego;\textbackslash{}nWHEN tanque < 10 THEN llenar tanque;} &
+  V10 & \texttt{WHEN hora == 6 THEN iniciar riego;}\newline
+  \texttt{WHEN hora == 8 THEN detener riego;}\newline
+  \texttt{WHEN tanque < 10 THEN llenar tanque;} &
   Acepta & Acepta & Tres reglas en líneas distintas \\
   I01 & \texttt{WHEN humedad < THEN abrir valvula;} & Rechaza &
   Rechaza en 1:16. Se esperaba un número, TRUE o FALSE; se encontró
@@ -947,8 +951,9 @@ python herramientas/validar_gramatica.py
 \end{Verbatim}
 
 \texttt{pruebas/test\_casos.py} recorre los 25 casos. Para cada uno
-compara el resultado con el esperado y, en un rechazo, la etapa, la
-ubicación, el token y los tipos esperados. En V01 a V05 e I01 a I05
+compara el resultado con el esperado y, en un rechazo, la etapa y la
+ubicación. Para los rechazos sintácticos compara también el token y
+los tipos esperados. En V01 a V05 e I01 a I05
 compara además los tokens con los publicados.
 \texttt{pruebas/test\_parser.py} compara el AST completo de V01 a V05
 con estructuras esperadas y comprueba la asociación izquierda, la
