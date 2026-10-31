@@ -118,4 +118,4 @@ El informe copia las tablas de `docs/` (casos, traza y tablas de la gramática).
 
 ## Autores
 
-Fernando, Juanfra y Vicente.
+Fernando Alonso Valdés Gómez, Juan Francisco Muñoz Veloso y Vicente Rodrigo Rivera Sánchez.
